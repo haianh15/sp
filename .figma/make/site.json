@@ -1,0 +1,10 @@
+{
+  "description": "This web application streamlines webpage layouts for improved user experience, helping businesses present content clearly and effectively for their customers.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
