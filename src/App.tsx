@@ -38,7 +38,7 @@ type OrderInfo = {
   note: string
 }
 
-type PaymentMethod = 'cod' | 'bank_transfer' | 'online'
+type PaymentMethod = 'cod' | 'online'
 
 type OnlinePaymentMethod = {
   id: string; name: string; desc: string; icon: string
@@ -117,13 +117,16 @@ const SHIPPING_METHODS: ShippingMethod[] = [
 ]
 
 const PROMO_CODES: PromoCode[] = [
-  { code: 'VINEYEWEAR10', label: "Giảm 10% toàn bộ đơn hàng", discountType: 'percent', discountValue: 10, minOrder: 500000, validUntil: '2026-12-31', maxUses: 1000, usedCount: 120 },
-  { code: 'GIAM200K', label: "Giảm 200.000đ cho đơn từ 2 triệu", discountType: 'fixed', discountValue: 200000, minOrder: 2000000, validUntil: '2026-12-31', maxUses: 500, usedCount: 98 },
-  { code: 'FREESHIP', label: "Miễn phí vận chuyển", discountType: 'fixed', discountValue: 999999, minOrder: 0, validUntil: '2026-09-30', maxUses: 200, usedCount: 199 },
-  { code: 'ONLINE_FULL5', label: "Thanh toán online đủ — tặng giảm 5%", discountType: 'percent', discountValue: 5, minOrder: 0, validUntil: '2026-12-31', maxUses: 9999, usedCount: 0 },
-  { code: 'ONLINE_FULL100K', label: "Thanh toán online đủ — tặng giảm 100.000đ", discountType: 'fixed', discountValue: 100000, minOrder: 1000000, validUntil: '2026-12-31', maxUses: 9999, usedCount: 0 },
-  { code: 'EXPIRED', label: "Mã đã hết hạn", discountType: 'percent', discountValue: 5, minOrder: 0, validUntil: '2025-01-01', maxUses: 100, usedCount: 50 },
+  { code: 'VINEYEWEAR10',  label: "Giảm 10% toàn bộ đơn hàng",               discountType: 'percent', discountValue: 10,     minOrder: 500000,  validUntil: '2026-12-31', maxUses: 1000, usedCount: 120 },
+  { code: 'GIAM200K',      label: "Giảm 200.000đ cho đơn từ 2 triệu",         discountType: 'fixed',   discountValue: 200000, minOrder: 2000000, validUntil: '2026-12-31', maxUses: 500,  usedCount: 98  },
+  { code: 'FREESHIP',      label: "Miễn phí vận chuyển",                      discountType: 'fixed',   discountValue: 999999, minOrder: 0,       validUntil: '2026-09-30', maxUses: 200,  usedCount: 199 },
+  { code: 'FULL_GIAM7',    label: "Thanh toán full online — giảm 7%",          discountType: 'percent', discountValue: 7,      minOrder: 0,       validUntil: '2026-12-31', maxUses: 9999, usedCount: 0   },
+  { code: 'FULL_150K',     label: "Thanh toán full online — giảm 150.000đ",    discountType: 'fixed',   discountValue: 150000, minOrder: 1500000, validUntil: '2026-12-31', maxUses: 9999, usedCount: 0   },
+  { code: 'EXPIRED',       label: "Mã đã hết hạn",                            discountType: 'percent', discountValue: 5,      minOrder: 0,       validUntil: '2025-01-01', maxUses: 100,  usedCount: 50  },
 ]
+
+// Mã giảm giá tặng khi thanh toán full online
+const FULL_PAYMENT_PROMOS = ['FULL_GIAM7', 'FULL_150K']
 
 const ONLINE_PAYMENT_METHODS: OnlinePaymentMethod[] = [
   { id: 'momo',      name: "Ví MoMo",          desc: "Thanh toán qua ví điện tử MoMo",               icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z' },
@@ -1872,7 +1875,7 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
 
   // Đơn có tròng → mặc định online để đặt cọc
   const hasLensItems = items.some(i => i.purchaseType === 'with_lens')
-  const [payment, setPayment] = useState<PaymentMethod>(hasLensItems ? 'online' : 'cod')
+  const [payment, setPayment] = useState<PaymentMethod>('cod')
 
   const provinces = Object.keys(ADDRESS_DATA)
   const districts = info.province ? Object.keys(ADDRESS_DATA[info.province]?.districts ?? {}) : []
@@ -2240,31 +2243,44 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
               <div className="bg-white rounded-2xl border border-gray-100 p-6">
                 <h3 className="font-bold text-gray-900 mb-4">Phương thức thanh toán</h3>
                 {hasLensItems && (
-                  <p className="text-xs mb-3 font-medium" style={{ color: 'var(--primary)' }}>
-                    ⚠️ Đơn có cắt tròng — chọn thanh toán online để đặt cọc 5% ngay.
-                  </p>
+                  <div className="mb-4 p-3 rounded-xl text-xs font-medium" style={{ backgroundColor: 'var(--primary-soft)', color: 'var(--primary)' }}>
+                    💎 Đơn có cắt tròng: bắt buộc đặt cọc <strong>5%</strong> khi đặt hàng. Số tiền còn lại thanh toán khi nhận hàng.
+                  </div>
                 )}
                 <div className="space-y-3">
                   {([
-                    { id: 'cod',           name: "Thanh toán khi nhận hàng (COD)", desc: "Trả tiền mặt khi nhận hàng",                   icon: "💵" },
-                    { id: 'bank_transfer', name: "Chuyển khoản ngân hàng",          desc: "Chuyển khoản thủ công sau khi đặt hàng",       icon: "🏦" },
-                    { id: 'online',        name: "Thanh toán online",               desc: hasLensItems ? "Đặt cọc 5% ngay — MoMo, VNPay, QR..." : "MoMo, ZaloPay, VNPay, thẻ ngân hàng, QR", icon: "📱" },
-                  ] as { id: PaymentMethod; name: string; desc: string; icon: string }[]).map(m => (
+                    {
+                      id: 'cod' as PaymentMethod,
+                      icon: '🏠',
+                      name: "Thanh toán khi nhận hàng",
+                      desc: hasLensItems
+                        ? `Đặt cọc ${fmt(Math.round(total * 0.05))} khi đặt — còn lại trả khi nhận`
+                        : "Trả tiền mặt hoặc chuyển khoản khi nhận hàng",
+                    },
+                    {
+                      id: 'online' as PaymentMethod,
+                      icon: '📱',
+                      name: "Thanh toán online",
+                      desc: hasLensItems
+                        ? "Đặt cọc 5% hoặc thanh toán full — nhận ưu đãi khi full"
+                        : "QR VietQR · MoMo · VNPay — xác nhận đơn ngay",
+                    },
+                  ]).map(m => (
                     <button key={m.id} onClick={() => setPayment(m.id)}
                       className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl transition-all text-left ${payment === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${payment === m.id ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
                         {payment === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
                       </div>
-                      <span className="text-lg">{m.icon}</span>
+                      <span className="text-xl leading-none">{m.icon}</span>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-gray-900 flex items-center gap-2">
-                          {m.name}
-                          {m.id === 'online' && hasLensItems && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>Khuyến nghị</span>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-500">{m.desc}</div>
+                        <div className="font-semibold text-sm text-gray-900">{m.name}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{m.desc}</div>
                       </div>
+                      {m.id === 'online' && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>
+                          {hasLensItems ? '🎁 Ưu đãi' : 'Nhanh nhất'}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -2337,169 +2353,199 @@ function PaymentPage({ order, onResult, onBack }: {
   onResult: (txn: Transaction) => void
   onBack: () => void
 }) {
-  const [payMode, setPayMode] = useState<'deposit' | 'full'>('full')
-  const [selectedMethod, setSelectedMethod] = useState<OnlinePaymentMethod>(ONLINE_PAYMENT_METHODS[0])
-  const [showQR, setShowQR] = useState(false)
+  const hasLens = order.items.some(i => i.purchaseType === 'with_lens')
 
-  const depositAmount = Math.round(order.total * 0.3)
-  const fullAmount = order.total
+  // Cọc 5% hoặc full — chỉ hiện lựa chọn khi online + có tròng
+  const [payMode, setPayMode] = useState<'deposit' | 'full'>(hasLens ? 'deposit' : 'full')
+
+  // Tính tiền
+  const depositAmount   = Math.round(order.total * 0.05)
+  const remaining       = order.total - depositAmount
+
+  // Mã giảm giá full (chỉ khi full)
+  const today = new Date().toISOString().slice(0, 10)
+  const fullPromos = PROMO_CODES.filter(
+    p => FULL_PAYMENT_PROMOS.includes(p.code) &&
+         p.validUntil >= today &&
+         p.usedCount < p.maxUses &&
+         order.total >= p.minOrder
+  )
+  const bestFullPromo = fullPromos[0] ?? null
+  const fullDiscount = bestFullPromo
+    ? bestFullPromo.discountType === 'percent'
+      ? Math.round(order.total * bestFullPromo.discountValue / 100)
+      : bestFullPromo.discountValue
+    : 0
+  const fullAmount = order.total - fullDiscount
 
   const payAmount = payMode === 'deposit' ? depositAmount : fullAmount
 
-  function handlePay() {
-    // Simulate payment
+  const [confirmed, setConfirmed] = useState(false)
+
+  function handleConfirm() {
     const txn: Transaction = {
-      txnId: 'TXN-' + Date.now().toString(36).toUpperCase(),
-      orderId: order.id,
-      amount: payAmount,
-      expectedAmount: payAmount,
-      method: selectedMethod.name,
-      status: 'success',
-      paidAt: new Date().toISOString(),
-      isDeposit: payMode === 'deposit',
-      depositAmount: payMode === 'deposit' ? depositAmount : 0,
-      remainingAmount: payMode === 'deposit' ? fullAmount - depositAmount : 0,
+      txnId:           'TXN-' + Date.now().toString(36).toUpperCase(),
+      orderId:         order.id,
+      amount:          payAmount,
+      expectedAmount:  payAmount,
+      method:          'QR VietQR',
+      status:          'success',
+      paidAt:          new Date().toLocaleString('vi-VN'),
+      isDeposit:       payMode === 'deposit',
+      depositAmount:   payMode === 'deposit' ? depositAmount : 0,
+      remainingAmount: payMode === 'deposit' ? remaining : 0,
     }
     onResult(txn)
   }
 
-  if (showQR) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-12">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
-          <h2 className="text-xl font-black text-gray-900 mb-2">Quét mã QR để thanh toán</h2>
-          <p className="text-sm text-gray-500 mb-6">Sử dụng app ngân hàng bất kỳ hỗ trợ VietQR</p>
-          {/* Mock QR code */}
-          <div className="w-48 h-48 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-6 border-4 border-[var(--primary-soft)]">
-            <div className="grid grid-cols-5 gap-1 w-36 h-36">
-              {Array.from({ length: 25 }).map((_, i) => (
-                <div key={i} className={`rounded-sm ${[0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24,6,12,18].includes(i) ? 'bg-gray-900' : 'bg-white'}`} />
-              ))}
-            </div>
-          </div>
-          <div className="bg-gray-50 rounded-xl p-4 mb-6">
-            <div className="text-xs text-gray-500 mb-1">Số tiền cần chuyển</div>
-            <div className="text-2xl font-black text-[var(--primary)]">{fmt(payAmount)}</div>
-            <div className="text-xs text-gray-500 mt-1">Nội dung: {order.id}</div>
-          </div>
-          <div className="flex gap-3">
-            <button onClick={() => setShowQR(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-              Quay lại
-            </button>
-            <button onClick={handlePay} className="flex-1 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors">
-              Đã chuyển khoản
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex items-center gap-3 mb-8">
+    <div className="max-w-md mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
         <button onClick={onBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Thanh toán online</h1>
-          <p className="text-sm text-gray-500">Đơn hàng #{order.id}</p>
+          <h1 className="text-xl font-black text-gray-900">Thanh toán</h1>
+          <p className="text-xs text-gray-500">#{order.id}</p>
         </div>
       </div>
 
-      {/* Pay mode selection */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
-        <h3 className="font-bold text-gray-900 mb-4">Chọn hình thức thanh toán</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {/* Deposit */}
-          <button
-            onClick={() => setPayMode('deposit')}
-            className={`relative p-4 border-2 rounded-xl transition-all text-left ${payMode === 'deposit' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${payMode === 'deposit' ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
-                {payMode === 'deposit' && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
-              </div>
-              <span className="text-sm font-bold text-gray-900">Đặt cọc 30%</span>
-            </div>
-            <div className="text-xl font-black text-[var(--primary-dark)]">{fmt(depositAmount)}</div>
-            <div className="mt-2">
-              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">
-                🎁 Tặng {DEPOSIT_BONUS_RATE}% điểm thưởng
-              </span>
-            </div>
-            <div className="text-xs text-gray-500 mt-1">Thanh toán phần còn lại khi nhận hàng</div>
-          </button>
+      <div className="space-y-4">
 
-          {/* Full */}
-          <button
-            onClick={() => setPayMode('full')}
-            className={`relative p-4 border-2 rounded-xl transition-all text-left ${payMode === 'full' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${payMode === 'full' ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
-                {payMode === 'full' && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
-              </div>
-              <span className="text-sm font-bold text-gray-900">Thanh toán đủ</span>
+        {/* Chọn cọc / full — chỉ khi đơn có tròng */}
+        {hasLens && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <p className="text-sm font-bold text-gray-900 mb-3">Hình thức thanh toán</p>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Đặt cọc */}
+              <button onClick={() => setPayMode('deposit')}
+                className={`p-4 border-2 rounded-xl transition-all text-left ${payMode === 'deposit' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}>
+                <div className={`w-4 h-4 rounded-full border-2 mb-2 flex items-center justify-center ${payMode === 'deposit' ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
+                  {payMode === 'deposit' && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
+                </div>
+                <p className="text-sm font-bold text-gray-900">Đặt cọc 5%</p>
+                <p className="text-lg font-black mt-1" style={{ color: 'var(--primary)' }}>{fmt(depositAmount)}</p>
+                <p className="text-[10px] text-gray-500 mt-1">Còn lại {fmt(remaining)} khi nhận</p>
+              </button>
+              {/* Thanh toán full */}
+              <button onClick={() => setPayMode('full')}
+                className={`p-4 border-2 rounded-xl transition-all text-left ${payMode === 'full' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}>
+                <div className={`w-4 h-4 rounded-full border-2 mb-2 flex items-center justify-center ${payMode === 'full' ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
+                  {payMode === 'full' && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
+                </div>
+                <p className="text-sm font-bold text-gray-900">Thanh toán đủ</p>
+                <p className="text-lg font-black mt-1" style={{ color: 'var(--primary)' }}>{fmt(fullAmount)}</p>
+                {bestFullPromo ? (
+                  <p className="text-[10px] font-semibold mt-1" style={{ color: 'var(--success)' }}>
+                    🎁 Giảm {fmt(fullDiscount)} — {bestFullPromo.code}
+                  </p>
+                ) : (
+                  <p className="text-[10px] text-gray-500 mt-1">Không cần trả thêm</p>
+                )}
+              </button>
             </div>
-            <div className="text-xl font-black text-[var(--primary-dark)]">{fmt(fullAmount)}</div>
-            <div className="mt-2">
-              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
-                🎁 Tặng {FULL_BONUS_RATE}% điểm thưởng
-              </span>
-            </div>
-            <div className="text-xs text-gray-500 mt-1">Nhận ưu đãi tốt nhất khi thanh toán đủ</div>
-          </button>
-        </div>
-      </div>
 
-      {/* Method selection */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
-        <h3 className="font-bold text-gray-900 mb-4">Chọn phương thức</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {ONLINE_PAYMENT_METHODS.map(m => (
-            <button
-              key={m.id}
-              onClick={() => setSelectedMethod(m)}
-              className={`flex items-center gap-3 p-3 border-2 rounded-xl transition-all text-left ${
-                selectedMethod.id === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${selectedMethod.id === m.id ? 'bg-[var(--primary-soft)]' : 'bg-gray-100'}`}>
-                <svg className={`w-5 h-5 ${selectedMethod.id === m.id ? 'text-[var(--primary)]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={m.icon} />
-                </svg>
+            {/* Banner giảm giá full */}
+            {payMode === 'full' && bestFullPromo && (
+              <div className="mt-3 flex items-center gap-2 p-3 rounded-xl text-xs font-medium" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534' }}>
+                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                Mã <strong>{bestFullPromo.code}</strong> tự động áp — {bestFullPromo.label} · Tiết kiệm {fmt(fullDiscount)}
               </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-900">{m.name}</div>
-                <div className="text-xs text-gray-500">{m.desc}</div>
-              </div>
+            )}
+          </div>
+        )}
+
+        {/* QR giả định — luôn hiện */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center">
+          <p className="font-bold text-gray-900 mb-1">Quét mã QR để thanh toán</p>
+          <p className="text-xs text-gray-500 mb-5">Dùng app ngân hàng bất kỳ hỗ trợ VietQR</p>
+
+          {/* QR code SVG giả định */}
+          <div className="mx-auto w-52 h-52 rounded-2xl overflow-hidden border-4 border-gray-100 bg-white flex items-center justify-center mb-5" style={{ boxShadow: '0 0 0 6px var(--muted)' }}>
+            <svg viewBox="0 0 200 200" className="w-48 h-48">
+              {/* 3 góc định vị */}
+              <rect x="8"  y="8"  width="52" height="52" rx="6" fill="none" stroke="#1a1214" strokeWidth="7"/>
+              <rect x="20" y="20" width="28" height="28" rx="2" fill="#1a1214"/>
+              <rect x="140" y="8"  width="52" height="52" rx="6" fill="none" stroke="#1a1214" strokeWidth="7"/>
+              <rect x="152" y="20" width="28" height="28" rx="2" fill="#1a1214"/>
+              <rect x="8"  y="140" width="52" height="52" rx="6" fill="none" stroke="#1a1214" strokeWidth="7"/>
+              <rect x="20" y="152" width="28" height="28" rx="2" fill="#1a1214"/>
+              {/* Logo trung tâm */}
+              <rect x="82" y="82" width="36" height="36" rx="5" fill="var(--primary)"/>
+              <text x="100" y="107" textAnchor="middle" fill="white" fontSize="18" fontWeight="bold">V</text>
+              {/* Data cells giả */}
+              {[72,80,88,96,104,112,120,128].flatMap(x =>
+                [72,80,88,96,104,112,120,128].map(y => {
+                  if (x >= 82 && x <= 118 && y >= 82 && y <= 118) return null
+                  return Math.sin(x * 1.3 + y * 0.7) > 0.15
+                    ? <rect key={`${x}-${y}`} x={x} y={y} width="7" height="7" rx="1" fill="#1a1214"/>
+                    : null
+                })
+              )}
+              {/* Thêm cells góc phải dưới */}
+              {[140,148,156,164,172,180].flatMap(x =>
+                [140,148,156,164,172,180].map(y =>
+                  Math.cos(x * 0.9 + y * 1.1) > 0
+                    ? <rect key={`c${x}-${y}`} x={x} y={y} width="7" height="7" rx="1" fill="#1a1214"/>
+                    : null
+                )
+              )}
+            </svg>
+          </div>
+
+          {/* Thông tin ngân hàng */}
+          <div className="space-y-1 text-xs text-gray-500 mb-4">
+            <p>Ngân hàng: <strong className="text-gray-800">Vietcombank</strong></p>
+            <p>STK: <strong className="text-gray-800">1234 5678 9012</strong></p>
+            <p>Tên: <strong className="text-gray-800">CONG TY TNHH VIN EYEWEAR</strong></p>
+            <p>Nội dung: <strong className="text-gray-800">{order.id}</strong></p>
+          </div>
+
+          {/* Số tiền nổi bật */}
+          <div className="rounded-xl py-4 px-5 mb-5" style={{ backgroundColor: 'var(--primary-soft)', border: '1px solid var(--primary-light)' }}>
+            <p className="text-xs font-medium mb-1" style={{ color: 'var(--accent-foreground)' }}>
+              {hasLens && payMode === 'deposit' ? 'Số tiền đặt cọc (5%)' : 'Số tiền cần chuyển'}
+            </p>
+            <p className="text-3xl font-black" style={{ color: 'var(--primary)' }}>{fmt(payAmount)}</p>
+            {hasLens && payMode === 'deposit' && (
+              <p className="text-xs mt-1" style={{ color: 'var(--accent-foreground)' }}>Còn lại {fmt(remaining)} thanh toán khi nhận hàng</p>
+            )}
+            {hasLens && payMode === 'full' && bestFullPromo && (
+              <p className="text-xs mt-1 font-semibold" style={{ color: 'var(--success)' }}>Đã áp mã {bestFullPromo.code} · tiết kiệm {fmt(fullDiscount)}</p>
+            )}
+          </div>
+
+          {/* Nút xác nhận */}
+          {!confirmed ? (
+            <button onClick={() => setConfirmed(true)}
+              className="w-full py-3.5 rounded-xl font-bold text-white transition-colors"
+              style={{ backgroundColor: 'var(--primary)' }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--primary-dark)')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--primary)')}>
+              Tôi đã chuyển khoản xong
             </button>
-          ))}
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-gray-700">Xác nhận bạn đã chuyển đúng số tiền <strong style={{ color: 'var(--primary)' }}>{fmt(payAmount)}</strong>?</p>
+              <div className="flex gap-3">
+                <button onClick={() => setConfirmed(false)}
+                  className="flex-1 py-2.5 rounded-xl font-semibold border text-sm hover:bg-gray-50 transition-colors"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+                  Kiểm tra lại
+                </button>
+                <button onClick={handleConfirm}
+                  className="flex-1 py-2.5 rounded-xl font-semibold text-white text-sm transition-colors"
+                  style={{ backgroundColor: 'var(--success)' }}>
+                  Xác nhận ✓
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Summary + Pay */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
-        <div className="flex justify-between text-sm mb-2">
-          <span className="text-gray-500">Tổng đơn hàng</span>
-          <span>{fmt(order.total)}</span>
-        </div>
-        <div className="flex justify-between font-bold text-lg border-t border-gray-100 pt-3 mb-5">
-          <span>Số tiền thanh toán</span>
-          <span className="text-[var(--primary)] text-2xl">{fmt(payAmount)}</span>
-        </div>
-        <button
-          onClick={() => selectedMethod.id === 'qr' ? setShowQR(true) : handlePay()}
-          className="w-full py-4 bg-[var(--primary)] text-white rounded-xl font-bold text-lg hover:bg-[var(--primary-dark)] transition-colors"
-        >
-          Thanh toán {fmt(payAmount)} qua {selectedMethod.name}
-        </button>
-        <p className="text-xs text-center text-gray-400 mt-3">
-          Bảo mật bởi SSL 256-bit. Thông tin thanh toán được mã hóa.
-        </p>
       </div>
     </div>
   )
@@ -2656,7 +2702,7 @@ function OrderSuccessPage({ order, onHome, onPayOnline }: {
           <div className="flex gap-2">
             <span className="text-gray-500 w-28 flex-shrink-0">Thanh toán:</span>
             <span className="font-medium text-gray-900">
-              {order.payment === 'cod' ? "COD - Thanh toán khi nhận hàng" : order.payment === 'bank_transfer' ? "Chuyển khoản ngân hàng" : "Thanh toán online"}
+              {order.payment === 'cod' ? "COD - Thanh toán khi nhận hàng" : "Thanh toán online"}
             </span>
           </div>
         </div>
