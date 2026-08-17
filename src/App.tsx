@@ -111,10 +111,9 @@ const MOCK_PROFILES: Record<number, PrescriptionData> = {
 const emptyEye = (): EyeRx => ({ sph: '', cyl: '', axis: '', add: '' })
 
 const SHIPPING_METHODS: ShippingMethod[] = [
-  { id: 'standard', name: "Giao hàng tiêu chuẩn", desc: "Nhận hàng trong 3–5 ngày làm việc", fee: 30000, eta: "3–5 ngày" },
-  { id: 'express', name: "Giao hàng nhanh", desc: "Nhận hàng trong 1–2 ngày làm việc", fee: 50000, eta: "1–2 ngày" },
-  { id: 'same_day', name: "Giao hàng trong ngày", desc: "Chỉ áp dụng nội thành Hà Nội, đặt trước 11:00", fee: 80000, eta: "Trong ngày" },
-  { id: 'showroom', name: "Nhận tại showroom", desc: "Miễn phí, nhận tại 46 Hoàng Hoa Thám hoặc 261 Ngọc Lâm", fee: 0, eta: "Ngay hôm nay" },
+  { id: 'home',        name: "Giao hàng tận nhà", desc: "Shipper giao đến địa chỉ của bạn",           fee: 30000, eta: "2–4 ngày" },
+  { id: 'store_taytho', name: "Nhận tại cơ sở Tây Hồ", desc: "46 Hoàng Hoa Thám, phường Tây Hồ, Hà Nội", fee: 0,     eta: "Ngay hôm nay" },
+  { id: 'store_longbien', name: "Nhận tại cơ sở Long Biên", desc: "261 Ngọc Lâm, phường Bồ Đề, Long Biên, Hà Nội", fee: 0, eta: "Ngay hôm nay" },
 ]
 
 const PROMO_CODES: PromoCode[] = [
@@ -1887,14 +1886,19 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
   const shippingFee = appliedPromo?.code === 'FREESHIP' ? 0 : shipping.fee
   const total = Math.max(0, subtotal - discount + shippingFee)
 
+  // Nhận tại cửa hàng → không cần nhập địa chỉ
+  const isPickup = shipping.id === 'store_taytho' || shipping.id === 'store_longbien'
+
   function validateInfo(): boolean {
     const errors: Partial<OrderInfo> = {}
     if (!info.name.trim()) errors.name = "Vui lòng nhập họ tên"
     if (!info.phone.trim() || !/^(0|\+84)[0-9]{9}$/.test(info.phone.replace(/\s/g, ''))) errors.phone = "Số điện thoại không hợp lệ"
-    if (!info.province) errors.province = "Vui lòng chọn tỉnh/thành"
-    if (!info.district) errors.district = "Vui lòng chọn quận/huyện"
-    if (!info.ward) errors.ward = "Vui lòng chọn phường/xã"
-    if (!info.streetAddress.trim()) errors.streetAddress = "Vui lòng nhập địa chỉ"
+    if (!isPickup) {
+      if (!info.province) errors.province = "Vui lòng chọn tỉnh/thành"
+      if (!info.district) errors.district = "Vui lòng chọn quận/huyện"
+      if (!info.ward) errors.ward = "Vui lòng chọn phường/xã"
+      if (!info.streetAddress.trim()) errors.streetAddress = "Vui lòng nhập địa chỉ"
+    }
     setInfoErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -1982,6 +1986,35 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
           {checkoutStep === 1 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
               <h2 className="text-lg font-bold text-gray-900 mb-4">Thông tin nhận hàng</h2>
+
+              {/* Chọn hình thức nhận ngay từ đầu */}
+              <div>
+                <p className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Hình thức nhận hàng</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button onClick={() => setShipping(SHIPPING_METHODS[0])}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all text-left ${shipping.id === 'home' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}>
+                    <span className="text-xl">🚚</span>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: shipping.id === 'home' ? 'var(--primary)' : 'var(--foreground)' }}>Giao tận nhà</p>
+                      <p className="text-xs" style={{ color: 'var(--caption)' }}>{fmt(SHIPPING_METHODS[0].fee)}</p>
+                    </div>
+                  </button>
+                  <div className="flex flex-col gap-2">
+                    {[SHIPPING_METHODS[1], SHIPPING_METHODS[2]].map(m => (
+                      <button key={m.id} onClick={() => setShipping(m)}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${shipping.id === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}>
+                        <span className="text-lg">🏪</span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold truncate" style={{ color: shipping.id === m.id ? 'var(--primary)' : 'var(--foreground)' }}>
+                            {m.id === 'store_taytho' ? 'CS Tây Hồ' : 'CS Long Biên'}
+                          </p>
+                          <p className="text-[10px]" style={{ color: 'var(--caption)' }}>Miễn phí</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Field label="Họ và tên" value={info.name} onChange={v => setInfo(i => ({ ...i, name: v }))} placeholder="Nguyễn Văn A" required />
@@ -1992,36 +2025,54 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                   {infoErrors.phone && <p className="text-red-500 text-xs mt-1">{infoErrors.phone}</p>}
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <SelectField
-                    label="Tỉnh / Thành phố" value={info.province}
-                    onChange={v => setInfo(i => ({ ...i, province: v, district: '', ward: '' }))}
-                    options={provinces} placeholder="Chọn tỉnh/thành" required
-                  />
-                  {infoErrors.province && <p className="text-red-500 text-xs mt-1">{infoErrors.province}</p>}
+              {!isPickup && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <SelectField
+                        label="Tỉnh / Thành phố" value={info.province}
+                        onChange={v => setInfo(i => ({ ...i, province: v, district: '', ward: '' }))}
+                        options={provinces} placeholder="Chọn tỉnh/thành" required
+                      />
+                      {infoErrors.province && <p className="text-red-500 text-xs mt-1">{infoErrors.province}</p>}
+                    </div>
+                    <div>
+                      <SelectField
+                        label="Quận / Huyện" value={info.district}
+                        onChange={v => setInfo(i => ({ ...i, district: v, ward: '' }))}
+                        options={districts} placeholder="Chọn quận/huyện" required
+                      />
+                      {infoErrors.district && <p className="text-red-500 text-xs mt-1">{infoErrors.district}</p>}
+                    </div>
+                    <div>
+                      <SelectField
+                        label="Phường / Xã" value={info.ward}
+                        onChange={v => setInfo(i => ({ ...i, ward: v }))}
+                        options={wards} placeholder="Chọn phường/xã" required
+                      />
+                      {infoErrors.ward && <p className="text-red-500 text-xs mt-1">{infoErrors.ward}</p>}
+                    </div>
+                  </div>
+                  <div>
+                    <Field label="Số nhà, tên đường" value={info.streetAddress} onChange={v => setInfo(i => ({ ...i, streetAddress: v }))} placeholder="46 Hoàng Hoa Thám" required />
+                    {infoErrors.streetAddress && <p className="text-red-500 text-xs mt-1">{infoErrors.streetAddress}</p>}
+                  </div>
+                </>
+              )}
+
+              {/* Banner địa chỉ cửa hàng khi chọn pickup */}
+              {isPickup && (
+                <div className="flex items-start gap-3 p-4 rounded-xl" style={{ backgroundColor: 'var(--primary-soft)', border: '1px solid var(--primary-light)' }}>
+                  <span className="text-xl">📍</span>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>
+                      {shipping.id === 'store_taytho' ? 'Cơ sở Tây Hồ' : 'Cơ sở Long Biên'}
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--caption)' }}>{shipping.desc}</p>
+                    <p className="text-xs mt-1 font-medium" style={{ color: 'var(--caption)' }}>Giờ mở cửa: 8:00 – 21:00 mỗi ngày</p>
+                  </div>
                 </div>
-                <div>
-                  <SelectField
-                    label="Quận / Huyện" value={info.district}
-                    onChange={v => setInfo(i => ({ ...i, district: v, ward: '' }))}
-                    options={districts} placeholder="Chọn quận/huyện" required
-                  />
-                  {infoErrors.district && <p className="text-red-500 text-xs mt-1">{infoErrors.district}</p>}
-                </div>
-                <div>
-                  <SelectField
-                    label="Phường / Xã" value={info.ward}
-                    onChange={v => setInfo(i => ({ ...i, ward: v }))}
-                    options={wards} placeholder="Chọn phường/xã" required
-                  />
-                  {infoErrors.ward && <p className="text-red-500 text-xs mt-1">{infoErrors.ward}</p>}
-                </div>
-              </div>
-              <div>
-                <Field label="Số nhà, tên đường" value={info.streetAddress} onChange={v => setInfo(i => ({ ...i, streetAddress: v }))} placeholder="46 Hoàng Hoa Thám" required />
-                {infoErrors.streetAddress && <p className="text-red-500 text-xs mt-1">{infoErrors.streetAddress}</p>}
-              </div>
+              )}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700">Ghi chú</label>
                 <textarea
@@ -2044,35 +2095,70 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
           {/* Step 2 */}
           {checkoutStep === 2 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-5">Phương thức giao hàng</h2>
-              <div className="space-y-3">
-                {SHIPPING_METHODS.map(m => (
+              <h2 className="text-lg font-bold text-gray-900 mb-5">Phương thức nhận hàng</h2>
+              <div className="space-y-4">
+
+                {/* Nhóm 1: Giao tận nhà */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--caption)' }}>
+                    🚚 Giao hàng tận nhà
+                  </p>
                   <button
-                    key={m.id}
-                    onClick={() => setShipping(m)}
+                    onClick={() => setShipping(SHIPPING_METHODS[0])}
                     className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left ${
-                      shipping.id === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'
+                      shipping.id === 'home'
+                        ? 'border-[var(--primary)] bg-[var(--primary-soft)]'
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        shipping.id === m.id ? 'border-[var(--primary)]' : 'border-gray-300'
+                        shipping.id === 'home' ? 'border-[var(--primary)]' : 'border-gray-300'
                       }`}>
-                        {shipping.id === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
+                        {shipping.id === 'home' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
                       </div>
                       <div>
-                        <div className="font-semibold text-gray-900 text-sm">{m.name}</div>
-                        <div className="text-xs text-gray-500 mt-0.5">{m.desc}</div>
+                        <div className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>Giao hàng tận nhà</div>
+                        <div className="text-xs mt-0.5" style={{ color: 'var(--caption)' }}>Shipper giao đến địa chỉ của bạn · {SHIPPING_METHODS[0].eta}</div>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-4">
-                      <div className={`font-bold text-sm ${m.fee === 0 ? 'text-green-600' : 'text-gray-900'}`}>
-                        {m.fee === 0 ? "Miễn phí" : fmt(m.fee)}
-                      </div>
-                      <div className="text-xs text-gray-400">{m.eta}</div>
+                      <div className="font-bold text-sm" style={{ color: 'var(--foreground)' }}>{fmt(SHIPPING_METHODS[0].fee)}</div>
                     </div>
                   </button>
-                ))}
+                </div>
+
+                {/* Nhóm 2: Nhận tại cửa hàng */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--caption)' }}>
+                    🏪 Nhận tại cửa hàng — Miễn phí
+                  </p>
+                  <div className="space-y-2">
+                    {[SHIPPING_METHODS[1], SHIPPING_METHODS[2]].map(m => (
+                      <button
+                        key={m.id}
+                        onClick={() => setShipping(m)}
+                        className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl transition-all text-left ${
+                          shipping.id === m.id
+                            ? 'border-[var(--primary)] bg-[var(--primary-soft)]'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          shipping.id === m.id ? 'border-[var(--primary)]' : 'border-gray-300'
+                        }`}>
+                          {shipping.id === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>{m.name}</div>
+                          <div className="text-xs mt-0.5" style={{ color: 'var(--caption)' }}>{m.desc}</div>
+                        </div>
+                        <span className="text-xs font-bold shrink-0" style={{ color: 'var(--success)' }}>Miễn phí</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
               </div>
               <div className="flex gap-3 mt-6">
                 <button
