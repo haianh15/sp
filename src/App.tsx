@@ -2396,8 +2396,12 @@ function PaymentPage({ order, onResult, onBack }: {
   onBack: () => void
 }) {
   const hasLens = order.items.some(i => i.purchaseType === 'with_lens')
+  const isCOD   = order.payment === 'cod'
 
-  const [payMode, setPayMode] = useState<'deposit' | 'full'>(hasLens ? 'deposit' : 'full')
+  // COD chỉ đặt cọc; online thì có thêm lựa chọn full
+  const [payMode, setPayMode] = useState<'deposit' | 'full'>(
+    hasLens ? 'deposit' : 'full'
+  )
   const [confirmed, setConfirmed] = useState(false)
 
   // Tính tiền
@@ -2519,9 +2523,14 @@ function PaymentPage({ order, onResult, onBack }: {
           {/* Chọn cọc / full — chỉ khi đơn có tròng */}
           {hasLens && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              <p className="text-sm font-bold text-gray-900 mb-3">Hình thức thanh toán</p>
+              <p className="text-sm font-bold text-gray-900 mb-1">Hình thức thanh toán</p>
+              {isCOD && (
+                <p className="text-xs mb-3" style={{ color: 'var(--caption)' }}>
+                  Thanh toán khi nhận hàng — cần đặt cọc 5% qua QR để xác nhận đơn.
+                </p>
+              )}
               <div className="space-y-2">
-                {/* Đặt cọc */}
+                {/* Đặt cọc — luôn hiện */}
                 <button onClick={() => { setPayMode('deposit'); setConfirmed(false) }}
                   className={`w-full flex items-center gap-3 p-3.5 border-2 rounded-xl transition-all text-left ${payMode === 'deposit' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}>
                   <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${payMode === 'deposit' ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
@@ -2534,7 +2543,8 @@ function PaymentPage({ order, onResult, onBack }: {
                   <p className="text-sm font-black shrink-0" style={{ color: 'var(--primary)' }}>{fmt(depositAmount)}</p>
                 </button>
 
-                {/* Thanh toán full */}
+                {/* Thanh toán full — chỉ khi online */}
+                {!isCOD && (
                 <button onClick={() => { setPayMode('full'); setConfirmed(false) }}
                   className={`w-full flex items-center gap-3 p-3.5 border-2 rounded-xl transition-all text-left ${payMode === 'full' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}>
                   <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${payMode === 'full' ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
@@ -2548,10 +2558,11 @@ function PaymentPage({ order, onResult, onBack }: {
                   </div>
                   <p className="text-sm font-black shrink-0" style={{ color: 'var(--primary)' }}>{fmt(fullAmount)}</p>
                 </button>
+                )}
               </div>
 
-              {/* Banner giảm giá full */}
-              {payMode === 'full' && bestFullPromo && (
+              {/* Banner giảm giá full — chỉ online */}
+              {!isCOD && payMode === 'full' && bestFullPromo && (
                 <div className="mt-3 flex items-center gap-2 p-3 rounded-xl text-xs font-medium"
                   style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534' }}>
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
@@ -2860,8 +2871,11 @@ export default function App() {
   function handlePlaceOrder(order: PlacedOrder) {
     setPlacedOrder(order)
     setCart(prev => prev.filter(ci => !checkoutItems.some(co => co.product.id === ci.product.id)))
-    // Online → thẳng trang thanh toán, không qua success
-    if (order.payment === 'online') {
+    const hasLens = order.items.some(i => i.purchaseType === 'with_lens')
+    // Online → thẳng QR
+    // COD + có tròng → thẳng QR (chỉ cọc, không có option full)
+    // COD + không tròng → trang thành công
+    if (order.payment === 'online' || hasLens) {
       setView('payment')
     } else {
       setView('success')
