@@ -1853,7 +1853,7 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
   onBack: () => void
   onPlaceOrder: (order: PlacedOrder) => void
 }) {
-  const [checkoutStep, setCheckoutStep] = useState<1 | 2 | 3>(1)
+  const [checkoutStep, setCheckoutStep] = useState<1 | 2>(1)
 
   // Step 1 - Delivery info
   const [info, setInfo] = useState<OrderInfo>({
@@ -1861,14 +1861,18 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
   })
   const [infoErrors, setInfoErrors] = useState<Partial<OrderInfo>>({})
 
-  // Step 2 - Shipping
+  // Shipping — đã chọn ngay ở step 1
   const [shipping, setShipping] = useState<ShippingMethod>(SHIPPING_METHODS[0])
 
-  // Step 3 - Promo + Payment
+  // Step 2 - Promo + Payment
   const [promoInput, setPromoInput] = useState('')
+  const [promoDropdownOpen, setPromoDropdownOpen] = useState(false)
   const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null)
   const [promoError, setPromoError] = useState<string | null>(null)
-  const [payment, setPayment] = useState<PaymentMethod>('cod')
+
+  // Đơn có tròng → mặc định online để đặt cọc
+  const hasLensItems = items.some(i => i.purchaseType === 'with_lens')
+  const [payment, setPayment] = useState<PaymentMethod>(hasLensItems ? 'online' : 'cod')
 
   const provinces = Object.keys(ADDRESS_DATA)
   const districts = info.province ? Object.keys(ADDRESS_DATA[info.province]?.districts ?? {}) : []
@@ -1937,7 +1941,7 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
     onPlaceOrder(order)
   }
 
-  const stepLabels = ["Thông tin nhận hàng", "Phương thức giao hàng", "Xác nhận đơn hàng"]
+  const stepLabels = ["Thông tin nhận hàng", "Xác nhận đơn hàng"]
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -2087,100 +2091,43 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                 onClick={() => { if (validateInfo()) setCheckoutStep(2) }}
                 className="w-full py-3.5 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
               >
-                Tiếp theo: Phương thức giao hàng
+                Tiếp theo: Xác nhận đơn hàng
               </button>
             </div>
           )}
 
-          {/* Step 2 */}
+          {/* Step 2 — Xác nhận đơn + Promo + Thanh toán */}
           {checkoutStep === 2 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-5">Phương thức nhận hàng</h2>
-              <div className="space-y-4">
+            <div className="space-y-5">
 
-                {/* Nhóm 1: Giao tận nhà */}
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--caption)' }}>
-                    🚚 Giao hàng tận nhà
-                  </p>
-                  <button
-                    onClick={() => setShipping(SHIPPING_METHODS[0])}
-                    className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left ${
-                      shipping.id === 'home'
-                        ? 'border-[var(--primary)] bg-[var(--primary-soft)]'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        shipping.id === 'home' ? 'border-[var(--primary)]' : 'border-gray-300'
-                      }`}>
-                        {shipping.id === 'home' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>Giao hàng tận nhà</div>
-                        <div className="text-xs mt-0.5" style={{ color: 'var(--caption)' }}>Shipper giao đến địa chỉ của bạn · {SHIPPING_METHODS[0].eta}</div>
+              {/* Banner đặt cọc khi đơn có tròng */}
+              {hasLensItems && (
+                <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--primary-soft)', border: '1px solid var(--primary-light)' }}>
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">💎</span>
+                    <div>
+                      <p className="font-bold text-sm" style={{ color: 'var(--primary)' }}>Đơn có cắt tròng kính — cần đặt cọc 5%</p>
+                      <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--accent-foreground)' }}>
+                        Đơn hàng của bạn gồm sản phẩm cắt tròng theo số đo. Chúng tôi yêu cầu đặt cọc <strong>5% giá trị đơn</strong> để xác nhận sản xuất. Số tiền còn lại thanh toán khi nhận hàng.
+                      </p>
+                      <div className="grid grid-cols-3 gap-2 mt-3">
+                        {[
+                          ['Tổng đơn', fmt(total)],
+                          ['Đặt cọc 5%', fmt(Math.round(total * 0.05))],
+                          ['Còn lại', fmt(total - Math.round(total * 0.05))],
+                        ].map(([k, v]) => (
+                          <div key={k} className="rounded-lg py-2 px-1 text-center" style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}>
+                            <p className="text-[10px] font-medium" style={{ color: 'var(--accent-foreground)' }}>{k}</p>
+                            <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--primary)' }}>{v}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0 ml-4">
-                      <div className="font-bold text-sm" style={{ color: 'var(--foreground)' }}>{fmt(SHIPPING_METHODS[0].fee)}</div>
-                    </div>
-                  </button>
-                </div>
-
-                {/* Nhóm 2: Nhận tại cửa hàng */}
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--caption)' }}>
-                    🏪 Nhận tại cửa hàng — Miễn phí
-                  </p>
-                  <div className="space-y-2">
-                    {[SHIPPING_METHODS[1], SHIPPING_METHODS[2]].map(m => (
-                      <button
-                        key={m.id}
-                        onClick={() => setShipping(m)}
-                        className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl transition-all text-left ${
-                          shipping.id === m.id
-                            ? 'border-[var(--primary)] bg-[var(--primary-soft)]'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                          shipping.id === m.id ? 'border-[var(--primary)]' : 'border-gray-300'
-                        }`}>
-                          {shipping.id === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>{m.name}</div>
-                          <div className="text-xs mt-0.5" style={{ color: 'var(--caption)' }}>{m.desc}</div>
-                        </div>
-                        <span className="text-xs font-bold shrink-0" style={{ color: 'var(--success)' }}>Miễn phí</span>
-                      </button>
-                    ))}
                   </div>
                 </div>
+              )}
 
-              </div>
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setCheckoutStep(1)}
-                  className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-                >
-                  Quay lại
-                </button>
-                <button
-                  onClick={() => setCheckoutStep(3)}
-                  className="flex-1 py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
-                >
-                  Tiếp theo: Xác nhận đơn
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3 */}
-          {checkoutStep === 3 && (
-            <div className="space-y-5">
-              {/* Order items review */}
+              {/* Xem lại đơn hàng */}
               <div className="bg-white rounded-2xl border border-gray-100 p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Xem lại đơn hàng</h2>
                 <div className="space-y-3">
@@ -2192,6 +2139,9 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                         <div className="text-xs text-gray-400">
                           {item.purchaseType === 'frame_only' ? "Chỉ gọng" : `Gọng + ${item.lensOption?.name ?? "tròng"}`} · SL: {item.qty}
                         </div>
+                        {item.purchaseType === 'with_lens' && (
+                          <span className="inline-block text-[10px] px-1.5 py-0.5 rounded-full font-semibold mt-0.5" style={{ backgroundColor: 'var(--primary-soft)', color: 'var(--primary)' }}>Cắt tròng</span>
+                        )}
                       </div>
                       <div className="font-bold text-gray-900 text-sm flex-shrink-0">
                         {fmt((item.product.price + (item.lensOption?.surcharge ?? 0)) * item.qty)}
@@ -2199,64 +2149,120 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                     </div>
                   ))}
                 </div>
+                {/* Shipping info */}
+                <div className="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2 text-sm">
+                  <span>{isPickup ? '🏪' : '🚚'}</span>
+                  <span style={{ color: 'var(--caption)' }}>{shipping.name}</span>
+                  <span className="ml-auto font-semibold" style={{ color: shippingFee === 0 ? 'var(--success)' : 'var(--foreground)' }}>
+                    {shippingFee === 0 ? 'Miễn phí' : fmt(shippingFee)}
+                  </span>
+                </div>
               </div>
 
-              {/* Promo code */}
+              {/* Mã giảm giá */}
               <div className="bg-white rounded-2xl border border-gray-100 p-6">
                 <h3 className="font-bold text-gray-900 mb-3">Mã giảm giá</h3>
                 {appliedPromo ? (
-                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                  <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--primary-soft)', border: '1px solid var(--primary-light)' }}>
                     <div>
-                      <span className="font-mono font-bold text-green-700">{appliedPromo.code}</span>
-                      <span className="text-xs text-green-600 ml-2">— {appliedPromo.label}</span>
+                      <span className="font-mono font-bold" style={{ color: 'var(--primary)' }}>{appliedPromo.code}</span>
+                      <span className="text-xs ml-2" style={{ color: 'var(--accent-foreground)' }}>— {appliedPromo.label}</span>
                     </div>
-                    <button onClick={removePromo} className="text-red-400 hover:text-red-600 text-xs font-medium">Xóa</button>
+                    <button onClick={removePromo} className="text-xs font-medium hover:underline" style={{ color: 'var(--destructive)' }}>Xóa</button>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={promoInput}
-                      onChange={e => setPromoInput(e.target.value.toUpperCase())}
-                      onKeyDown={e => e.key === 'Enter' && applyPromo()}
-                      placeholder="Nhập mã giảm giá..."
-                      className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                    <button
-                      onClick={applyPromo}
-                      className="px-4 py-2.5 bg-[var(--primary)] text-white rounded-xl text-sm font-semibold hover:bg-[var(--primary-dark)] transition-colors"
-                    >
-                      Áp dụng
-                    </button>
+                  <div className="space-y-2">
+                    {/* Dropdown chọn mã có sẵn */}
+                    {(() => {
+                      const today = new Date().toISOString().slice(0, 10)
+                      const available = PROMO_CODES.filter(p =>
+                        p.validUntil >= today && p.usedCount < p.maxUses && subtotal >= p.minOrder && p.code !== 'EXPIRED'
+                      )
+                      return available.length > 0 ? (
+                        <div className="relative">
+                          <button
+                            onClick={() => setPromoDropdownOpen(o => !o)}
+                            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm transition-all"
+                            style={{ borderColor: 'var(--border)', backgroundColor: 'var(--muted)', color: 'var(--foreground)' }}
+                          >
+                            <span style={{ color: 'var(--caption)' }}>Chọn mã giảm giá...</span>
+                            <svg className="w-4 h-4 transition-transform" style={{ transform: promoDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', color: 'var(--caption)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          {promoDropdownOpen && (
+                            <div className="absolute z-10 top-full left-0 right-0 mt-1 rounded-xl shadow-lg overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+                              {available.map(p => {
+                                const saving = p.discountType === 'percent'
+                                  ? Math.round(subtotal * p.discountValue / 100)
+                                  : p.discountValue
+                                return (
+                                  <button key={p.code}
+                                    onClick={() => { setAppliedPromo(p); setPromoError(null); setPromoDropdownOpen(false) }}
+                                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--muted)] transition-colors border-b last:border-0"
+                                    style={{ borderColor: 'var(--border)' }}>
+                                    <div>
+                                      <span className="font-mono font-bold text-sm" style={{ color: 'var(--primary)' }}>{p.code}</span>
+                                      <p className="text-xs mt-0.5" style={{ color: 'var(--caption)' }}>{p.label}</p>
+                                      {p.minOrder > 0 && <p className="text-[10px]" style={{ color: 'var(--caption)' }}>Đơn tối thiểu {fmt(p.minOrder)}</p>}
+                                    </div>
+                                    <span className="text-sm font-bold ml-3 shrink-0" style={{ color: 'var(--success)' }}>-{fmt(saving)}</span>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      ) : null
+                    })()}
+                    {/* Input thủ công */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text" value={promoInput}
+                        onChange={e => setPromoInput(e.target.value.toUpperCase())}
+                        onKeyDown={e => e.key === 'Enter' && applyPromo()}
+                        placeholder="Hoặc nhập mã khác..."
+                        className="flex-1 px-3 py-2.5 border rounded-xl text-sm focus:outline-none"
+                        style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}
+                      />
+                      <button onClick={applyPromo}
+                        className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
+                        style={{ backgroundColor: 'var(--primary)' }}>
+                        Áp dụng
+                      </button>
+                    </div>
                   </div>
                 )}
-                {promoError && <p className="text-red-500 text-xs mt-2">{promoError}</p>}
+                {promoError && <p className="text-xs mt-2" style={{ color: 'var(--destructive)' }}>{promoError}</p>}
               </div>
 
-              {/* Payment method */}
+              {/* Phương thức thanh toán */}
               <div className="bg-white rounded-2xl border border-gray-100 p-6">
                 <h3 className="font-bold text-gray-900 mb-4">Phương thức thanh toán</h3>
+                {hasLensItems && (
+                  <p className="text-xs mb-3 font-medium" style={{ color: 'var(--primary)' }}>
+                    ⚠️ Đơn có cắt tròng — chọn thanh toán online để đặt cọc 5% ngay.
+                  </p>
+                )}
                 <div className="space-y-3">
                   {([
-                    { id: 'cod', name: "Thanh toán khi nhận hàng (COD)", desc: "Trả tiền mặt khi nhận hàng", icon: "💵" },
-                    { id: 'bank_transfer', name: "Chuyển khoản ngân hàng", desc: "Chuyển khoản thủ công sau khi đặt hàng", icon: "🏦" },
-                    { id: 'online', name: "Thanh toán online", desc: "MoMo, ZaloPay, VNPay, thẻ ngân hàng, QR", icon: "📱" },
+                    { id: 'cod',           name: "Thanh toán khi nhận hàng (COD)", desc: "Trả tiền mặt khi nhận hàng",                   icon: "💵" },
+                    { id: 'bank_transfer', name: "Chuyển khoản ngân hàng",          desc: "Chuyển khoản thủ công sau khi đặt hàng",       icon: "🏦" },
+                    { id: 'online',        name: "Thanh toán online",               desc: hasLensItems ? "Đặt cọc 5% ngay — MoMo, VNPay, QR..." : "MoMo, ZaloPay, VNPay, thẻ ngân hàng, QR", icon: "📱" },
                   ] as { id: PaymentMethod; name: string; desc: string; icon: string }[]).map(m => (
-                    <button
-                      key={m.id}
-                      onClick={() => setPayment(m.id)}
-                      className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl transition-all text-left ${
-                        payment === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        payment === m.id ? 'border-[var(--primary)]' : 'border-gray-300'
-                      }`}>
+                    <button key={m.id} onClick={() => setPayment(m.id)}
+                      className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl transition-all text-left ${payment === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${payment === m.id ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
                         {payment === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
                       </div>
                       <span className="text-lg">{m.icon}</span>
-                      <div>
-                        <div className="font-semibold text-sm text-gray-900">{m.name}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm text-gray-900 flex items-center gap-2">
+                          {m.name}
+                          {m.id === 'online' && hasLensItems && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}>Khuyến nghị</span>
+                          )}
+                        </div>
                         <div className="text-xs text-gray-500">{m.desc}</div>
                       </div>
                     </button>
@@ -2265,17 +2271,13 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
               </div>
 
               <div className="flex gap-3">
-                <button
-                  onClick={() => setCheckoutStep(2)}
-                  className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-                >
+                <button onClick={() => setCheckoutStep(1)}
+                  className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
                   Quay lại
                 </button>
-                <button
-                  onClick={handlePlaceOrder}
-                  className="flex-1 py-3.5 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
-                >
-                  {payment === 'online' ? "Đặt hàng & Thanh toán" : "Xác nhận đặt hàng"}
+                <button onClick={handlePlaceOrder}
+                  className="flex-1 py-3.5 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors">
+                  {payment === 'online' ? (hasLensItems ? `Đặt hàng & Đặt cọc ${fmt(Math.round(total * 0.05))}` : "Đặt hàng & Thanh toán") : "Xác nhận đặt hàng"}
                 </button>
               </div>
             </div>
