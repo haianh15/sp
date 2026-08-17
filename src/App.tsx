@@ -753,58 +753,96 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
           </div>
         )}
 
-        {/* Step: rx_has_profile */}
+        {/* Step: rx_has_profile — có hồ sơ: hiện hồ sơ + hỏi xác nhận */}
         {step === 'rx_has_profile' && (
           <div className="space-y-4">
             {profileRx ? (
               <>
-                <div className="bg-[var(--primary-soft)] border border-[var(--primary-soft)] rounded-xl p-4">
-                  <div className="text-sm font-semibold text-[var(--primary-dark)] mb-3">Hồ sơ đo mắt gần nhất của bạn:</div>
-                  <div className="grid grid-cols-5 gap-1 text-xs text-center">
-                    <div className="font-bold text-gray-500"></div>
-                    <div className="font-bold text-gray-700">SPH</div>
-                    <div className="font-bold text-gray-700">CYL</div>
-                    <div className="font-bold text-gray-700">AXIS</div>
-                    <div className="font-bold text-gray-700">ADD</div>
-                    <div className="font-bold text-gray-700">OD</div>
-                    <div>{profileRx.od.sph}</div>
-                    <div>{profileRx.od.cyl || "—"}</div>
-                    <div>{profileRx.od.axis || "—"}</div>
-                    <div>{profileRx.od.add || "—"}</div>
-                    <div className="font-bold text-gray-700">OS</div>
-                    <div>{profileRx.os.sph}</div>
-                    <div>{profileRx.os.cyl || "—"}</div>
-                    <div>{profileRx.os.axis || "—"}</div>
-                    <div>{profileRx.os.add || "—"}</div>
+                {/* Banner hồ sơ */}
+                <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+                  <div className="flex items-center gap-2 px-4 py-3" style={{ backgroundColor: 'var(--primary-soft)' }}>
+                    <svg className="w-4 h-4 shrink-0" style={{ color: 'var(--primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>Hồ sơ khúc xạ đã lưu</p>
+                  </div>
+                  <div className="p-4 space-y-3" style={{ backgroundColor: 'var(--card)' }}>
+                    {[
+                      { label: '👁 Mắt phải (OD)', eye: profileRx.od },
+                      { label: '👁 Mắt trái (OS)',  eye: profileRx.os },
+                    ].map(({ label, eye }) => (
+                      <div key={label} className="rounded-xl p-3" style={{ backgroundColor: 'var(--muted)' }}>
+                        <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--primary)' }}>{label}</p>
+                        <div className="grid grid-cols-4 gap-2 text-center">
+                          {[['SPH', eye.sph], ['CYL', eye.cyl || '—'], ['AXIS', eye.axis || '—'], ['ADD', eye.add || '—']].map(([k, v]) => (
+                            <div key={k}>
+                              <p className="text-[9px] uppercase font-medium" style={{ color: 'var(--caption)' }}>{k}</p>
+                              <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--foreground)' }}>{v}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleRxChoice(true)}
-                  className="w-full py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
-                >
-                  Dùng số đo này
+
+                <p className="text-sm text-center font-medium" style={{ color: 'var(--caption)' }}>Số đo này có còn chính xác không?</p>
+
+                {/* Đúng → tiếp tục */}
+                <button onClick={() => handleRxChoice(true)}
+                  className="w-full py-3 rounded-xl font-semibold text-white transition-colors"
+                  style={{ backgroundColor: 'var(--primary)' }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--primary-dark)')}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--primary)')}>
+                  ✓ Đúng, dùng số đo này
                 </button>
-                <button
-                  onClick={() => handleRxChoice(false)}
-                  className="w-full py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:border-gray-300 transition-colors"
-                >
+
+                {/* Không đúng → nhập lại */}
+                <button onClick={() => handleRxChoice(false)}
+                  className="w-full py-3 rounded-xl font-semibold border-2 transition-all hover:bg-gray-50"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
                   Nhập số đo mới
                 </button>
+
+                {/* Đặt lịch đo mắt */}
+                <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}>
+                  <p className="text-xs font-medium mb-1" style={{ color: 'var(--caption)' }}>Lâu không đo hoặc không chắc số đo cũ?</p>
+                  <button
+                    onClick={onClose}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold underline-offset-2 underline"
+                    style={{ color: 'var(--primary)' }}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Đặt lịch đo mắt miễn phí
+                  </button>
+                </div>
               </>
             ) : (
-              <button
-                onClick={() => handleRxChoice(false)}
-                className="w-full py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
-              >
+              /* Không có hồ sơ — đến rx_form */
+              <button onClick={() => handleRxChoice(false)}
+                className="w-full py-3 rounded-xl font-semibold text-white"
+                style={{ backgroundColor: 'var(--primary)' }}>
                 Nhập số đo khúc xạ
               </button>
             )}
           </div>
         )}
 
-        {/* Step: rx_form */}
+        {/* Step: rx_form — chưa có hồ sơ: nhập hoặc đặt lịch */}
         {step === 'rx_form' && (
           <div className="space-y-4">
+            {/* Banner chưa có hồ sơ */}
+            {!profileRx && (
+              <div className="flex items-start gap-3 p-4 rounded-xl" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}>
+                <svg className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--caption)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>Bạn chưa có hồ sơ khúc xạ</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--caption)' }}>Nhập số đo từ đơn thuốc khúc xạ gần nhất, hoặc đặt lịch đo mắt miễn phí tại cửa hàng.</p>
+                </div>
+              </div>
+            )}
+
             {/* Chọn loại tật */}
             <div>
               <p className="text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Loại tật khúc xạ</p>
@@ -827,24 +865,28 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
             </div>
 
             {/* Form chọn độ */}
-            <SimpleRxForm
-              rxType={rxType}
-              rx={rx}
-              onChange={setRx}
-              showCyl={rxType === 'astigmatism'}
-            />
+            <SimpleRxForm rxType={rxType} rx={rx} onChange={setRx} showCyl={rxType === 'astigmatism'} />
 
             {rxError && (
               <div className="text-sm rounded-lg p-3" style={{ backgroundColor: 'var(--primary-soft)', color: 'var(--destructive)' }}>
                 {rxError}
               </div>
             )}
+
             <button onClick={handleRxSubmit}
               className="w-full py-3 rounded-xl font-semibold text-white transition-colors"
               style={{ backgroundColor: 'var(--primary)' }}
               onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--primary-dark)')}
               onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--primary)')}>
               Xác nhận độ kính
+            </button>
+
+            {/* Nút đặt lịch */}
+            <button onClick={onClose}
+              className="w-full py-3 rounded-xl font-semibold border-2 flex items-center justify-center gap-2 transition-all hover:bg-gray-50"
+              style={{ borderColor: 'var(--border)', color: 'var(--caption)' }}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              Không nhớ số đo? Đặt lịch đo mắt miễn phí
             </button>
           </div>
         )}
