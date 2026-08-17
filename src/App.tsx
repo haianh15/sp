@@ -108,6 +108,26 @@ const MOCK_PROFILES: Record<number, PrescriptionData> = {
   5: { od: { sph: '-3.00', cyl: '-0.75', axis: '90', add: '' }, os: { sph: '-2.75', cyl: '-0.50', axis: '85', add: '' } },
 }
 
+// Mock hồ sơ cá nhân khách hàng
+const MOCK_USER_PROFILE = {
+  name:    'Nguyễn Văn A',
+  email:   'nguyenvana@gmail.com',
+  address: '46 Hoàng Hoa Thám, Ba Đình, Hà Nội',
+}
+
+type InvoiceRequest = {
+  reqId:       string
+  orderId:     string
+  name:        string
+  taxCode:     string
+  address:     string
+  email:       string
+  txnType:     string
+  totalAmount: number
+  paidAmount:  number
+  status:      'pending'
+}
+
 const emptyEye = (): EyeRx => ({ sph: '', cyl: '', axis: '', add: '' })
 
 const SHIPPING_METHODS: ShippingMethod[] = [
@@ -2621,6 +2641,278 @@ function PaymentPage({ order, onResult, onBack }: {
   )
 }
 
+// ─── Invoice Request Modal ────────────────────────────────────────────────────
+
+function InvoiceRequestModal({ transaction, order, onClose }: {
+  transaction: Transaction
+  order: PlacedOrder
+  onClose: () => void
+}) {
+  const txnType = transaction.isDeposit ? 'Đặt cọc cắt tròng' : 'Thanh toán đầy đủ'
+
+  // Checkbox dùng hồ sơ cá nhân
+  const [useProfile, setUseProfile] = useState(true)
+
+  // Form fields
+  const [name,    setName]    = useState(MOCK_USER_PROFILE.name)
+  const [taxCode, setTaxCode] = useState('')
+  const [address, setAddress] = useState(MOCK_USER_PROFILE.address)
+  const [email,   setEmail]   = useState(MOCK_USER_PROFILE.email)
+
+  // Khi bỏ tick thì reset về rỗng, khi tick lại thì điền lại từ profile
+  function toggleProfile(checked: boolean) {
+    setUseProfile(checked)
+    if (checked) {
+      setName(MOCK_USER_PROFILE.name)
+      setAddress(MOCK_USER_PROFILE.address)
+      setEmail(MOCK_USER_PROFILE.email)
+    } else {
+      setName(''); setAddress(''); setEmail('')
+    }
+  }
+
+  // Validation & submit state
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(false)
+  const [result,  setResult]  = useState<InvoiceRequest | null>(null)
+
+  function validate(): boolean {
+    const e: Record<string, string> = {}
+    if (!name.trim())    e.name    = 'Vui lòng nhập họ tên / tên đơn vị.'
+    if (!address.trim()) e.address = 'Vui lòng nhập địa chỉ.'
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      e.email = 'Email không hợp lệ.'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  async function handleSubmit() {
+    if (!validate()) return
+    setLoading(true)
+    await new Promise(r => setTimeout(r, 1200))
+    setResult({
+      reqId:       'INV-REQ-' + Date.now().toString(36).toUpperCase().slice(-5),
+      orderId:     order.id,
+      name,
+      taxCode,
+      address,
+      email,
+      txnType,
+      totalAmount: order.total,
+      paidAmount:  transaction.amount,
+      status:      'pending',
+    })
+    setLoading(false)
+  }
+
+  // ── Màn hình kết quả ─────────────────────────────────────────────────────
+  if (result) {
+    return (
+      <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }}
+        onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+        <div className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-y-auto max-h-[90dvh]"
+          onClick={e => e.stopPropagation()}>
+          <div className="p-6 text-center border-b" style={{ borderColor: 'var(--border)' }}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#f0fdf4' }}>
+              <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-bold text-gray-900">Đã gửi yêu cầu</h2>
+            <p className="text-sm text-gray-500 mt-1">Yêu cầu của bạn đã được ghi nhận và đang chờ xử lý.</p>
+          </div>
+
+          <div className="p-6 space-y-4">
+            {/* Mã yêu cầu */}
+            <div className="rounded-xl p-4 text-center" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}>
+              <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--caption)' }}>Mã yêu cầu</p>
+              <p className="text-xl font-black font-mono" style={{ color: 'var(--primary)' }}>{result.reqId}</p>
+            </div>
+
+            {/* Trạng thái */}
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl" style={{ backgroundColor: '#fffbeb', border: '1px solid #fcd34d' }}>
+              <span className="text-sm font-medium text-amber-800">Trạng thái</span>
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-amber-700">
+                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
+                Chờ xử lý
+              </span>
+            </div>
+
+            {/* Chi tiết */}
+            <div className="space-y-2.5 text-sm">
+              {[
+                ['Mã đơn hàng',           result.orderId],
+                ['Người mua',              result.name],
+                ['Email',                  result.email],
+                ['Loại giao dịch',         result.txnType],
+                ['Tổng giá trị đơn',       fmt(result.totalAmount)],
+                ['Số tiền đã thanh toán',  fmt(result.paidAmount)],
+              ].map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4">
+                  <span style={{ color: 'var(--caption)' }}>{k}</span>
+                  <span className="font-medium text-right" style={{ color: 'var(--foreground)' }}>{v}</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-center" style={{ color: 'var(--caption)' }}>
+              Hóa đơn sẽ được gửi đến <strong>{result.email}</strong> sau khi xử lý (1–3 ngày làm việc).
+            </p>
+
+            <button onClick={onClose}
+              className="w-full py-3 rounded-xl font-semibold text-white"
+              style={{ backgroundColor: 'var(--primary)' }}>
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Màn hình form ─────────────────────────────────────────────────────────
+  return (
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-y-auto max-h-[90dvh]"
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="text-base font-bold text-gray-900">Yêu cầu xuất hóa đơn</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-5">
+          <p className="text-sm" style={{ color: 'var(--caption)' }}>
+            Vui lòng cung cấp thông tin để Vin Eyewear xử lý yêu cầu xuất hóa đơn.
+          </p>
+
+          {/* Toggle hồ sơ cá nhân */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <input type="checkbox" checked={useProfile} onChange={e => toggleProfile(e.target.checked)}
+              className="w-4 h-4 rounded accent-[var(--primary)] cursor-pointer" />
+            <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+              Sử dụng thông tin từ hồ sơ cá nhân
+            </span>
+          </label>
+
+          {/* ── Thông tin khách hàng ── */}
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--caption)' }}>Thông tin khách hàng</p>
+
+            {/* Họ tên */}
+            <div>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                Họ và tên / Tên đơn vị <span style={{ color: 'var(--destructive)' }}>*</span>
+              </label>
+              <input value={name} onChange={e => setName(e.target.value)} readOnly={useProfile}
+                placeholder="Nguyễn Văn A"
+                className="w-full border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none transition-colors"
+                style={{
+                  borderColor: errors.name ? 'var(--destructive)' : 'var(--border)',
+                  backgroundColor: useProfile ? 'var(--muted)' : 'var(--card)',
+                  color: 'var(--foreground)',
+                }} />
+              {errors.name && <p className="text-xs mt-1" style={{ color: 'var(--destructive)' }}>{errors.name}</p>}
+            </div>
+
+            {/* Mã số thuế */}
+            <div>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>Mã số thuế</label>
+              <input value={taxCode} onChange={e => setTaxCode(e.target.value)}
+                placeholder="Nhập mã số thuế nếu có"
+                className="w-full border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none transition-colors"
+                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }} />
+            </div>
+
+            {/* Địa chỉ */}
+            <div>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                Địa chỉ <span style={{ color: 'var(--destructive)' }}>*</span>
+              </label>
+              <input value={address} onChange={e => setAddress(e.target.value)} readOnly={useProfile}
+                placeholder="Hà Nội"
+                className="w-full border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none transition-colors"
+                style={{
+                  borderColor: errors.address ? 'var(--destructive)' : 'var(--border)',
+                  backgroundColor: useProfile ? 'var(--muted)' : 'var(--card)',
+                  color: 'var(--foreground)',
+                }} />
+              {errors.address && <p className="text-xs mt-1" style={{ color: 'var(--destructive)' }}>{errors.address}</p>}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--foreground)' }}>
+                Email nhận hóa đơn <span style={{ color: 'var(--destructive)' }}>*</span>
+              </label>
+              <input value={email} onChange={e => setEmail(e.target.value)} readOnly={useProfile}
+                type="email" placeholder="abc@gmail.com"
+                className="w-full border rounded-xl px-3.5 py-2.5 text-sm focus:outline-none transition-colors"
+                style={{
+                  borderColor: errors.email ? 'var(--destructive)' : 'var(--border)',
+                  backgroundColor: useProfile ? 'var(--muted)' : 'var(--card)',
+                  color: 'var(--foreground)',
+                }} />
+              {errors.email && <p className="text-xs mt-1" style={{ color: 'var(--destructive)' }}>{errors.email}</p>}
+            </div>
+          </div>
+
+          {/* ── Thông tin đơn hàng ── */}
+          <div className="space-y-2.5 rounded-xl p-4" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--caption)' }}>Thông tin đơn hàng</p>
+            {[
+              ['Mã đơn hàng',           order.id],
+              ['Loại giao dịch',         txnType],
+              ['Tổng giá trị đơn hàng',  fmt(order.total)],
+              ['Số tiền đã thanh toán',  fmt(transaction.amount)],
+            ].map(([k, v]) => (
+              <div key={k} className="flex justify-between text-sm">
+                <span style={{ color: 'var(--caption)' }}>{k}</span>
+                <span className="font-semibold" style={{ color: 'var(--foreground)' }}>{v}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Lưu ý */}
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--caption)' }}>
+            ℹ️ Hóa đơn sẽ được xử lý sau khi thông tin được kiểm tra (1–3 ngày làm việc).
+          </p>
+
+          {/* Buttons */}
+          <div className="flex gap-3 pt-1">
+            <button onClick={onClose}
+              className="flex-1 py-3 rounded-xl font-semibold border transition-all hover:bg-gray-50"
+              style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+              Hủy
+            </button>
+            <button onClick={handleSubmit} disabled={loading}
+              className="flex-1 py-3 rounded-xl font-semibold text-white disabled:opacity-60 flex items-center justify-center gap-2 transition-colors"
+              style={{ backgroundColor: 'var(--primary)' }}>
+              {loading ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  Đang gửi yêu cầu...
+                </>
+              ) : 'Gửi yêu cầu'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── PaymentResultPage ────────────────────────────────────────────────────────
 
 function PaymentResultPage({ transaction, order, onHome, onViewOrder }: {
@@ -2630,9 +2922,19 @@ function PaymentResultPage({ transaction, order, onHome, onViewOrder }: {
   onViewOrder: () => void
 }) {
   const isSuccess = transaction.status === 'success'
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false)
 
   return (
     <div className="max-w-lg mx-auto px-4 py-16 text-center">
+      {/* Invoice modal */}
+      {showInvoiceModal && (
+        <InvoiceRequestModal
+          transaction={transaction}
+          order={order}
+          onClose={() => setShowInvoiceModal(false)}
+        />
+      )}
+
       <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${isSuccess ? 'bg-green-100' : 'bg-red-100'}`}>
         {isSuccess ? (
           <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2645,7 +2947,7 @@ function PaymentResultPage({ transaction, order, onHome, onViewOrder }: {
         )}
       </div>
 
-      <h1 className={`text-2xl font-black mb-2 ${isSuccess ? 'text-gray-900' : 'text-gray-900'}`}>
+      <h1 className="text-2xl font-black mb-2 text-gray-900">
         {isSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại"}
       </h1>
       <p className="text-gray-500 mb-8">
@@ -2683,15 +2985,30 @@ function PaymentResultPage({ transaction, order, onHome, onViewOrder }: {
         </div>
       )}
 
-      <div className="flex gap-3">
-        <button onClick={onHome} className="flex-1 py-3 border border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+      <div className="flex flex-col gap-3">
+        {isSuccess && (
+          <>
+            {/* Yêu cầu xuất hóa đơn */}
+            <button onClick={() => setShowInvoiceModal(true)}
+              className="w-full py-3 rounded-xl font-semibold border-2 flex items-center justify-center gap-2 transition-all hover:bg-gray-50"
+              style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Yêu cầu xuất hóa đơn
+            </button>
+            {/* Xem đơn hàng */}
+            <button onClick={onViewOrder}
+              className="w-full py-3 rounded-xl font-semibold text-white transition-colors"
+              style={{ backgroundColor: 'var(--primary)' }}>
+              Xem đơn hàng
+            </button>
+          </>
+        )}
+        <button onClick={onHome}
+          className="w-full py-3 border border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
           Về trang chủ
         </button>
-        {isSuccess && (
-          <button onClick={onViewOrder} className="flex-1 py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors">
-            Xem đơn hàng
-          </button>
-        )}
       </div>
     </div>
   )
