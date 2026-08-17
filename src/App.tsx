@@ -418,7 +418,7 @@ function FilterDropdown({ label, options, value, onChange }: {
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#8b1a1a] cursor-pointer"
+        className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] cursor-pointer"
       >
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
@@ -435,7 +435,7 @@ function RxField({ label, value, onChange }: { label: string; value: string; onC
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder="—"
-        className="w-full px-2 py-1.5 border border-gray-200 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#8b1a1a]"
+        className="w-full px-2 py-1.5 border border-gray-200 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
       />
     </div>
   )
@@ -602,7 +602,7 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-gray-900 truncate">{product.name}</div>
             <div className="text-xs text-gray-500">{product.brand} · {product.sku}</div>
-            <div className="text-[#8b1a1a] font-bold mt-1">{fmt(product.price)}</div>
+            <div className="text-[var(--primary)] font-bold mt-1">{fmt(product.price)}</div>
           </div>
         </div>
 
@@ -611,7 +611,7 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
           <div className="space-y-3">
             <button
               onClick={() => handlePurchaseType('frame_only')}
-              className="w-full flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-[#c8524a] hover:bg-[#fff8f8] transition-all text-left"
+              className="w-full flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-[var(--primary-light)] hover:bg-[var(--primary-soft)] transition-all text-left"
             >
               <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -627,10 +627,10 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
             {product.supportsLensCutting && (
               <button
                 onClick={() => handlePurchaseType('with_lens')}
-                className="w-full flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-[#c8524a] hover:bg-[#fff8f8] transition-all text-left"
+                className="w-full flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-[var(--primary-light)] hover:bg-[var(--primary-soft)] transition-all text-left"
               >
-                <div className="w-10 h-10 rounded-full bg-[#fff0f0] flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-[#8b1a1a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 rounded-full bg-[var(--primary-soft)] flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                   </svg>
                 </div>
@@ -650,13 +650,13 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
               <button
                 key={lens.id}
                 onClick={() => handleLensSelect(lens)}
-                className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-[#c8524a] hover:bg-[#fff8f8] transition-all text-left"
+                className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-[var(--primary-light)] hover:bg-[var(--primary-soft)] transition-all text-left"
               >
                 <div>
                   <div className="font-semibold text-gray-900">{lens.name}</div>
                   <div className="text-xs text-gray-500 mt-0.5">{lens.desc}</div>
                 </div>
-                <div className="text-[#8b1a1a] font-bold text-sm ml-3 flex-shrink-0">+{fmt(lens.surcharge)}</div>
+                <div className="text-[var(--primary)] font-bold text-sm ml-3 flex-shrink-0">+{fmt(lens.surcharge)}</div>
               </button>
             ))}
           </div>
@@ -667,8 +667,8 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
           <div className="space-y-4">
             {profileRx ? (
               <>
-                <div className="bg-[#fff8f8] border border-[#fecaca] rounded-xl p-4">
-                  <div className="text-sm font-semibold text-[#5a1010] mb-3">Hồ sơ đo mắt gần nhất của bạn:</div>
+                <div className="bg-[var(--primary-soft)] border border-[var(--primary-soft)] rounded-xl p-4">
+                  <div className="text-sm font-semibold text-[var(--primary-dark)] mb-3">Hồ sơ đo mắt gần nhất của bạn:</div>
                   <div className="grid grid-cols-5 gap-1 text-xs text-center">
                     <div className="font-bold text-gray-500"></div>
                     <div className="font-bold text-gray-700">SPH</div>
@@ -689,7 +689,7 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
                 </div>
                 <button
                   onClick={() => handleRxChoice(true)}
-                  className="w-full py-3 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors"
+                  className="w-full py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
                 >
                   Dùng số đo này
                 </button>
@@ -703,7 +703,7 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
             ) : (
               <button
                 onClick={() => handleRxChoice(false)}
-                className="w-full py-3 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors"
+                className="w-full py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
               >
                 Nhập số đo khúc xạ
               </button>
@@ -719,7 +719,7 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
             {rxError && <div className="text-red-500 text-sm bg-red-50 rounded-lg p-3">{rxError}</div>}
             <button
               onClick={handleRxSubmit}
-              className="w-full py-3 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors"
+              className="w-full py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
             >
               Tiếp theo
             </button>
@@ -742,7 +742,7 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
               )}
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Đơn giá:</span>
-                <span className="font-bold text-[#8b1a1a]">{fmt(product.price + (selectedLens?.surcharge ?? 0))}</span>
+                <span className="font-bold text-[var(--primary)]">{fmt(product.price + (selectedLens?.surcharge ?? 0))}</span>
               </div>
             </div>
 
@@ -773,12 +773,12 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
 
             <div className="flex justify-between items-center py-3 border-t border-gray-100">
               <span className="font-semibold text-gray-700">Tổng cộng:</span>
-              <span className="text-xl font-bold text-[#8b1a1a]">{fmt(totalPrice)}</span>
+              <span className="text-xl font-bold text-[var(--primary)]">{fmt(totalPrice)}</span>
             </div>
 
             <button
               onClick={handleConfirm}
-              className="w-full py-3.5 bg-[#8b1a1a] text-white rounded-xl font-bold text-base hover:bg-[#6b1212] transition-colors"
+              className="w-full py-3.5 bg-[var(--primary)] text-white rounded-xl font-bold text-base hover:bg-[var(--primary-dark)] transition-colors"
             >
               {buyNow ? "Mua ngay" : "Thêm vào giỏ hàng"}
             </button>
@@ -802,7 +802,7 @@ function Toast({ message, type = 'success', onClose }: ToastProps) {
   const colors = {
     success: 'bg-green-600',
     error: 'bg-red-600',
-    info: 'bg-[#8b1a1a]',
+    info: 'bg-[var(--primary)]',
   }
 
   return (
@@ -865,7 +865,7 @@ function IconMail() {
 
 function TopBar() {
   return (
-    <div className="bg-[#6b1212] text-white text-xs py-2 px-4">
+    <div className="bg-[var(--primary-dark)] text-white text-xs py-2 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
@@ -882,7 +882,7 @@ function TopBar() {
             46 Hoàng Hoa Thám, Ba Đình, Hà Nội
           </span>
         </div>
-        <div className="flex items-center gap-3 text-[#fca5a5]">
+        <div className="flex items-center gap-3 text-[var(--primary-light)]">
           <span className="font-medium text-white">🎁 Giảm 10% đơn đầu tiên — Mã: VINEYEWEAR10</span>
         </div>
       </div>
@@ -903,22 +903,22 @@ function Navbar({ onHome, cartCount, onCartClick }: {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <button onClick={onHome} className="flex items-center gap-2 focus:outline-none">
-            <div className="w-9 h-9 bg-[#8b1a1a] rounded-xl flex items-center justify-center">
+            <div className="w-9 h-9 bg-[var(--primary)] rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
             </div>
-            <span className="text-xl font-black text-gray-900 tracking-tight">Vin <span className="text-[#8b1a1a]">Eyewear</span></span>
+            <span className="text-xl font-black text-gray-900 tracking-tight">Vin <span className="text-[var(--primary)]">Eyewear</span></span>
           </button>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
-            <button onClick={onHome} className="text-sm font-medium text-gray-700 hover:text-[#8b1a1a] transition-colors">Sản phẩm</button>
-            <button className="text-sm font-medium text-gray-700 hover:text-[#8b1a1a] transition-colors">Thương hiệu</button>
-            <button className="text-sm font-medium text-gray-700 hover:text-[#8b1a1a] transition-colors">Kiểm tra mắt</button>
-            <button className="text-sm font-medium text-gray-700 hover:text-[#8b1a1a] transition-colors">Khuyến mãi</button>
-            <button className="text-sm font-medium text-gray-700 hover:text-[#8b1a1a] transition-colors">Về chúng tôi</button>
+            <button onClick={onHome} className="text-sm font-medium text-gray-700 hover:text-[var(--primary)] transition-colors">Sản phẩm</button>
+            <button className="text-sm font-medium text-gray-700 hover:text-[var(--primary)] transition-colors">Thương hiệu</button>
+            <button className="text-sm font-medium text-gray-700 hover:text-[var(--primary)] transition-colors">Kiểm tra mắt</button>
+            <button className="text-sm font-medium text-gray-700 hover:text-[var(--primary)] transition-colors">Khuyến mãi</button>
+            <button className="text-sm font-medium text-gray-700 hover:text-[var(--primary)] transition-colors">Về chúng tôi</button>
           </div>
 
           {/* Right side */}
@@ -968,7 +968,7 @@ function Navbar({ onHome, cartCount, onCartClick }: {
             <button
               key={item}
               onClick={() => { setMenuOpen(false); if (item === "Sản phẩm") onHome() }}
-              className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#8b1a1a] rounded-lg transition-colors"
+              className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[var(--primary)] rounded-lg transition-colors"
             >
               {item}
             </button>
@@ -988,13 +988,13 @@ function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-[#8b1a1a] rounded-xl flex items-center justify-center">
+              <div className="w-8 h-8 bg-[var(--primary)] rounded-xl flex items-center justify-center">
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
               </div>
-              <span className="text-lg font-black text-white">Vin <span className="text-[#c8524a]">Eyewear</span></span>
+              <span className="text-lg font-black text-white">Vin <span className="text-[var(--primary-light)]">Eyewear</span></span>
             </div>
             <p className="text-sm text-gray-400 mb-4">Chuyên gọng kính thời trang & kính thuốc chính hãng. Hơn 10 năm kinh nghiệm phục vụ khách hàng.</p>
             <div className="flex items-center gap-3">
@@ -1024,20 +1024,20 @@ function Footer() {
             <h4 className="text-white font-semibold mb-4">Liên hệ</h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
-                <svg className="w-4 h-4 text-[#c8524a] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-[var(--primary-light)] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <span>46 Hoàng Hoa Thám, Ba Đình, Hà Nội<br />261 Ngọc Lâm, Long Biên, Hà Nội</span>
               </li>
               <li className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#c8524a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-[var(--primary-light)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
                 <span>0966 486 999</span>
               </li>
               <li className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#c8524a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-[var(--primary-light)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>8:00 – 21:00 mỗi ngày</span>
@@ -1075,7 +1075,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', required }:
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8b1a1a] focus:border-transparent"
+        className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
       />
     </div>
   )
@@ -1095,7 +1095,7 @@ function SelectField({ label, value, onChange, options, placeholder, required }:
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8b1a1a] bg-white text-gray-700"
+        className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white text-gray-700"
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -1141,7 +1141,7 @@ function ProductListPage({ onSelect, onAddToCart, onBuyNow }: {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Hero banner */}
-      <div className="relative bg-gradient-to-r from-[#6b1212] to-[#8b1a1a] rounded-3xl overflow-hidden mb-10 p-8 md:p-12">
+      <div className="relative bg-gradient-to-r from-[var(--primary-dark)] to-[var(--primary)] rounded-3xl overflow-hidden mb-10 p-8 md:p-12">
         <div className="relative z-10 max-w-lg">
           <div className="inline-flex items-center gap-2 bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
             ✨ Bộ sưu tập mới 2025
@@ -1149,7 +1149,7 @@ function ProductListPage({ onSelect, onAddToCart, onBuyNow }: {
           <h1 className="text-3xl md:text-4xl font-black text-white mb-3 leading-tight">
             Kính mắt thời trang<br />chính hãng
           </h1>
-          <p className="text-[#fee2e2] mb-6">Hơn 500 mẫu gọng & kính râm từ các thương hiệu nổi tiếng thế giới. Cắt tròng chuyên nghiệp tại cửa hàng.</p>
+          <p className="text-[var(--primary-soft)] mb-6">Hơn 500 mẫu gọng & kính râm từ các thương hiệu nổi tiếng thế giới. Cắt tròng chuyên nghiệp tại cửa hàng.</p>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1.5">
               <svg className="w-4 h-4 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
@@ -1180,7 +1180,7 @@ function ProductListPage({ onSelect, onAddToCart, onBuyNow }: {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Tìm kiếm theo tên, thương hiệu, mã sản phẩm..."
-              className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8b1a1a]"
+              className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1230,7 +1230,7 @@ function ProductListPage({ onSelect, onAddToCart, onBuyNow }: {
                     product.tag === 'Sport' ? 'bg-cyan-500 text-white' :
                     product.tag === 'Luxury' ? 'bg-purple-600 text-white' :
                     product.tag === 'Premium' ? 'bg-gray-800 text-white' :
-                    'bg-[#8b1a1a] text-white'
+                    'bg-[var(--primary)] text-white'
                   }`}>
                     {product.tag}
                   </span>
@@ -1249,9 +1249,9 @@ function ProductListPage({ onSelect, onAddToCart, onBuyNow }: {
 
               {/* Info */}
               <div className="p-4">
-                <div className="text-xs text-[#8b1a1a] font-semibold mb-1">{product.brand}</div>
+                <div className="text-xs text-[var(--primary)] font-semibold mb-1">{product.brand}</div>
                 <h3
-                  className="font-bold text-gray-900 mb-1 cursor-pointer hover:text-[#8b1a1a] transition-colors line-clamp-2"
+                  className="font-bold text-gray-900 mb-1 cursor-pointer hover:text-[var(--primary)] transition-colors line-clamp-2"
                   onClick={() => onSelect(product)}
                 >
                   {product.name}
@@ -1263,7 +1263,7 @@ function ProductListPage({ onSelect, onAddToCart, onBuyNow }: {
                 <div className="flex items-center gap-1.5 mt-2 mb-3">
                   {product.frameColors.slice(0, 4).map((c, i) => (
                     <div key={i} className="w-4 h-4 rounded-full border border-gray-200" style={{
-                      background: c.includes('Đen') ? '#1a1a1a' : c.includes('Vàng') ? '#d4a017' : c.includes('Bạc') ? '#c0c0c0' : c.includes('Nâu') ? '#8B4513' : c.includes('Xanh') ? '#5a1010' : c.includes('Rose') ? '#e91e8c' : c.includes('Đỏ') ? '#dc2626' : '#6b7280'
+                      background: c.includes('Đen') ? 'var(--foreground)' : c.includes('Vàng') ? '#d4a017' : c.includes('Bạc') ? '#c0c0c0' : c.includes('Nâu') ? '#8B4513' : c.includes('Xanh') ? 'var(--primary-dark)' : c.includes('Rose') ? '#e91e8c' : c.includes('Đỏ') ? 'var(--destructive)' : 'var(--muted-foreground)'
                     }} title={c} />
                   ))}
                   {product.frameColors.length > 4 && <span className="text-xs text-gray-400">+{product.frameColors.length - 4}</span>}
@@ -1282,13 +1282,13 @@ function ProductListPage({ onSelect, onAddToCart, onBuyNow }: {
                   <div className="flex gap-2">
                     <button
                       onClick={() => onAddToCart(product)}
-                      className="flex-1 py-2.5 border-2 border-[#8b1a1a] text-[#8b1a1a] rounded-xl text-sm font-semibold hover:bg-[#fff8f8] transition-colors"
+                      className="flex-1 py-2.5 border-2 border-[var(--primary)] text-[var(--primary)] rounded-xl text-sm font-semibold hover:bg-[var(--primary-soft)] transition-colors"
                     >
                       Giỏ hàng
                     </button>
                     <button
                       onClick={() => onBuyNow(product)}
-                      className="flex-1 py-2.5 bg-[#8b1a1a] text-white rounded-xl text-sm font-semibold hover:bg-[#6b1212] transition-colors"
+                      className="flex-1 py-2.5 bg-[var(--primary)] text-white rounded-xl text-sm font-semibold hover:bg-[var(--primary-dark)] transition-colors"
                     >
                       Mua ngay
                     </button>
@@ -1322,19 +1322,19 @@ function ProductDetailPage({ product, onBack, onAddToCart, onBuyNow }: {
   const [selectedColor, setSelectedColor] = useState(product.frameColors[0])
 
   const colorMap: Record<string, string> = {
-    "Đen bóng": "#1a1a1a", "Đen matte": "#2d2d2d", "Đen": "#1a1a1a", "Đen PVD": "#111",
+    "Đen bóng": "var(--foreground)", "Đen matte": "#2d2d2d", "Đen": "var(--foreground)", "Đen PVD": "#111",
     "Vàng": "#d4a017", "Vàng đồng": "#b8860b", "Vàng 18k": "#FFD700", "Rose gold": "#e91e8c",
     "Bạc": "#c0c0c0", "Titanium tự nhiên": "#a8b0b8",
     "Nâu đồi mồi": "#8B4513", "Đồi mồi": "#8B6914", "Nâu trong": "#A0522D",
     "Xanh dương matte": "#1e40af", "Xanh navy": "#001f5b", "Xanh neon": "#22d3ee",
-    "Đỏ trắng": "#dc2626",
+    "Đỏ trắng": "var(--destructive)",
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <button onClick={onBack} className="hover:text-[#8b1a1a] transition-colors flex items-center gap-1">
+        <button onClick={onBack} className="hover:text-[var(--primary)] transition-colors flex items-center gap-1">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -1361,8 +1361,8 @@ function ProductDetailPage({ product, onBack, onAddToCart, onBuyNow }: {
                   key={c}
                   onClick={() => setSelectedColor(c)}
                   title={c}
-                  className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === c ? 'border-[#8b1a1a] scale-110' : 'border-gray-200'}`}
-                  style={{ background: colorMap[c] ?? '#6b7280' }}
+                  className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === c ? 'border-[var(--primary)] scale-110' : 'border-gray-200'}`}
+                  style={{ background: colorMap[c] ?? 'var(--muted-foreground)' }}
                 />
               ))}
             </div>
@@ -1373,13 +1373,13 @@ function ProductDetailPage({ product, onBack, onAddToCart, onBuyNow }: {
         <div className="space-y-5">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-semibold text-[#8b1a1a]">{product.brand}</span>
+              <span className="text-sm font-semibold text-[var(--primary)]">{product.brand}</span>
               {product.tag && (
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                   product.tag === 'Bestseller' ? 'bg-orange-100 text-orange-700' :
                   product.tag === 'Hot' ? 'bg-red-100 text-red-700' :
                   product.tag === 'New' ? 'bg-green-100 text-green-700' :
-                  'bg-[#fff0f0] text-[#6b1212]'
+                  'bg-[var(--primary-soft)] text-[var(--primary-dark)]'
                 }`}>
                   {product.tag}
                 </span>
@@ -1391,9 +1391,9 @@ function ProductDetailPage({ product, onBack, onAddToCart, onBuyNow }: {
           </div>
 
           {/* Price */}
-          <div className="bg-[#fff8f8] rounded-2xl p-4">
+          <div className="bg-[var(--primary-soft)] rounded-2xl p-4">
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-black text-[#6b1212]">{fmt(product.price)}</span>
+              <span className="text-3xl font-black text-[var(--primary-dark)]">{fmt(product.price)}</span>
               {product.originalPrice && (
                 <>
                   <span className="text-lg text-gray-400 line-through">{fmt(product.originalPrice)}</span>
@@ -1402,7 +1402,7 @@ function ProductDetailPage({ product, onBack, onAddToCart, onBuyNow }: {
               )}
             </div>
             {product.supportsLensCutting && (
-              <p className="text-xs text-[#8b1a1a] mt-2 font-medium">✓ Hỗ trợ cắt tròng kính theo số đo</p>
+              <p className="text-xs text-[var(--primary)] mt-2 font-medium">✓ Hỗ trợ cắt tròng kính theo số đo</p>
             )}
           </div>
 
@@ -1429,7 +1429,7 @@ function ProductDetailPage({ product, onBack, onAddToCart, onBuyNow }: {
                   key={t}
                   onClick={() => setActiveTab(t)}
                   className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
-                    activeTab === t ? 'border-[#8b1a1a] text-[#8b1a1a]' : 'border-transparent text-gray-500 hover:text-gray-700'
+                    activeTab === t ? 'border-[var(--primary)] text-[var(--primary)]' : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   {t === 'info' ? "Mô tả" : t === 'specs' ? "Thông số" : `Đánh giá (${product.reviews})`}
@@ -1473,13 +1473,13 @@ function ProductDetailPage({ product, onBack, onAddToCart, onBuyNow }: {
             <div className="flex gap-3">
               <button
                 onClick={() => onAddToCart(product)}
-                className="flex-1 py-3.5 border-2 border-[#8b1a1a] text-[#8b1a1a] rounded-xl font-semibold hover:bg-[#fff8f8] transition-colors"
+                className="flex-1 py-3.5 border-2 border-[var(--primary)] text-[var(--primary)] rounded-xl font-semibold hover:bg-[var(--primary-soft)] transition-colors"
               >
                 Thêm vào giỏ
               </button>
               <button
                 onClick={() => onBuyNow(product)}
-                className="flex-1 py-3.5 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors"
+                className="flex-1 py-3.5 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
               >
                 Mua ngay
               </button>
@@ -1558,7 +1558,7 @@ function CartPage({ items, onUpdateQty, onDelete, onCheckout, onHome }: {
         <p className="text-gray-500 mb-8">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
         <button
           onClick={onHome}
-          className="px-8 py-3.5 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors"
+          className="px-8 py-3.5 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
         >
           Khám phá sản phẩm
         </button>
@@ -1587,7 +1587,7 @@ function CartPage({ items, onUpdateQty, onDelete, onCheckout, onHome }: {
               id="select-all"
               checked={allSelected}
               onChange={toggleAll}
-              className="w-4 h-4 rounded text-[#8b1a1a] cursor-pointer"
+              className="w-4 h-4 rounded text-[var(--primary)] cursor-pointer"
             />
             <label htmlFor="select-all" className="text-sm font-medium text-gray-700 cursor-pointer">
               Chọn tất cả ({items.length} sản phẩm)
@@ -1595,14 +1595,14 @@ function CartPage({ items, onUpdateQty, onDelete, onCheckout, onHome }: {
           </div>
 
           {items.map((item, i) => (
-            <div key={i} className={`bg-white rounded-2xl border transition-all ${selected[i] ? 'border-[#fecaca]' : 'border-gray-100'} p-4`}>
+            <div key={i} className={`bg-white rounded-2xl border transition-all ${selected[i] ? 'border-[var(--primary-soft)]' : 'border-gray-100'} p-4`}>
               <div className="flex gap-4">
                 <div className="flex items-start pt-1">
                   <input
                     type="checkbox"
                     checked={selected[i] ?? true}
                     onChange={() => toggle(i)}
-                    className="w-4 h-4 rounded text-[#8b1a1a] cursor-pointer"
+                    className="w-4 h-4 rounded text-[var(--primary)] cursor-pointer"
                   />
                 </div>
                 <img
@@ -1613,7 +1613,7 @@ function CartPage({ items, onUpdateQty, onDelete, onCheckout, onHome }: {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="text-xs text-[#8b1a1a] font-semibold">{item.product.brand}</div>
+                      <div className="text-xs text-[var(--primary)] font-semibold">{item.product.brand}</div>
                       <h4 className="font-bold text-gray-900 text-sm leading-tight">{item.product.name}</h4>
                       <div className="text-xs text-gray-400 mt-0.5">
                         {item.purchaseType === 'frame_only' ? "Chỉ gọng" : `Gọng + ${item.lensOption?.name ?? "tròng"}`}
@@ -1655,7 +1655,7 @@ function CartPage({ items, onUpdateQty, onDelete, onCheckout, onHome }: {
                         </svg>
                       </button>
                     </div>
-                    <span className="font-bold text-[#8b1a1a]">
+                    <span className="font-bold text-[var(--primary)]">
                       {fmt((item.product.price + (item.lensOption?.surcharge ?? 0)) * item.qty)}
                     </span>
                   </div>
@@ -1681,30 +1681,30 @@ function CartPage({ items, onUpdateQty, onDelete, onCheckout, onHome }: {
             </div>
             <div className="flex justify-between font-bold text-lg border-t border-gray-100 pt-3 mb-5">
               <span>Tạm tính</span>
-              <span className="text-[#8b1a1a]">{fmt(subtotal)}</span>
+              <span className="text-[var(--primary)]">{fmt(subtotal)}</span>
             </div>
             <button
               onClick={() => onCheckout(selectedItems)}
               disabled={selectedItems.length === 0}
-              className="w-full py-3.5 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Tiến hành đặt hàng ({selectedItems.length})
             </button>
             <button
               onClick={onHome}
-              className="w-full mt-3 py-3 text-[#8b1a1a] text-sm font-medium hover:underline transition-colors"
+              className="w-full mt-3 py-3 text-[var(--primary)] text-sm font-medium hover:underline transition-colors"
             >
               Tiếp tục mua sắm
             </button>
           </div>
 
           {/* Promo hints */}
-          <div className="bg-[#fff8f8] rounded-2xl p-4">
-            <h4 className="text-sm font-semibold text-[#5a1010] mb-2">Mã giảm giá</h4>
-            <p className="text-xs text-[#8b1a1a]">Nhập mã ở bước thanh toán để được giảm giá</p>
+          <div className="bg-[var(--primary-soft)] rounded-2xl p-4">
+            <h4 className="text-sm font-semibold text-[var(--primary-dark)] mb-2">Mã giảm giá</h4>
+            <p className="text-xs text-[var(--primary)]">Nhập mã ở bước thanh toán để được giảm giá</p>
             <div className="mt-2 space-y-1">
               {PROMO_CODES.slice(0, 2).map(p => (
-                <div key={p.code} className="text-xs bg-white rounded-lg px-3 py-1.5 font-mono font-bold text-[#6b1212] border border-[#fecaca]">
+                <div key={p.code} className="text-xs bg-white rounded-lg px-3 py-1.5 font-mono font-bold text-[var(--primary-dark)] border border-[var(--primary-soft)]">
                   {p.code}
                 </div>
               ))}
@@ -1836,7 +1836,7 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
             <div key={n} className="flex items-center gap-2">
               <div className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                  done ? 'bg-green-500 text-white' : active ? 'bg-[#8b1a1a] text-white' : 'bg-gray-100 text-gray-400'
+                  done ? 'bg-green-500 text-white' : active ? 'bg-[var(--primary)] text-white' : 'bg-gray-100 text-gray-400'
                 }`}>
                   {done ? (
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1844,7 +1844,7 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                     </svg>
                   ) : n}
                 </div>
-                <span className={`hidden sm:block text-xs font-medium ${active ? 'text-[#8b1a1a]' : done ? 'text-green-600' : 'text-gray-400'}`}>
+                <span className={`hidden sm:block text-xs font-medium ${active ? 'text-[var(--primary)]' : done ? 'text-green-600' : 'text-gray-400'}`}>
                   {label}
                 </span>
               </div>
@@ -1908,12 +1908,12 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                   onChange={e => setInfo(i => ({ ...i, note: e.target.value }))}
                   placeholder="Ghi chú thêm cho đơn hàng (tuỳ chọn)..."
                   rows={3}
-                  className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8b1a1a] resize-none"
+                  className="px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none"
                 />
               </div>
               <button
                 onClick={() => { if (validateInfo()) setCheckoutStep(2) }}
-                className="w-full py-3.5 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors"
+                className="w-full py-3.5 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
               >
                 Tiếp theo: Phương thức giao hàng
               </button>
@@ -1930,14 +1930,14 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                     key={m.id}
                     onClick={() => setShipping(m)}
                     className={`w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left ${
-                      shipping.id === m.id ? 'border-[#8b1a1a] bg-[#fff8f8]' : 'border-gray-200 hover:border-gray-300'
+                      shipping.id === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        shipping.id === m.id ? 'border-[#8b1a1a]' : 'border-gray-300'
+                        shipping.id === m.id ? 'border-[var(--primary)]' : 'border-gray-300'
                       }`}>
-                        {shipping.id === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[#8b1a1a]" />}
+                        {shipping.id === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
                       </div>
                       <div>
                         <div className="font-semibold text-gray-900 text-sm">{m.name}</div>
@@ -1962,7 +1962,7 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                 </button>
                 <button
                   onClick={() => setCheckoutStep(3)}
-                  className="flex-1 py-3 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors"
+                  className="flex-1 py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
                 >
                   Tiếp theo: Xác nhận đơn
                 </button>
@@ -2013,11 +2013,11 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                       onChange={e => setPromoInput(e.target.value.toUpperCase())}
                       onKeyDown={e => e.key === 'Enter' && applyPromo()}
                       placeholder="Nhập mã giảm giá..."
-                      className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#8b1a1a]"
+                      className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     />
                     <button
                       onClick={applyPromo}
-                      className="px-4 py-2.5 bg-[#8b1a1a] text-white rounded-xl text-sm font-semibold hover:bg-[#6b1212] transition-colors"
+                      className="px-4 py-2.5 bg-[var(--primary)] text-white rounded-xl text-sm font-semibold hover:bg-[var(--primary-dark)] transition-colors"
                     >
                       Áp dụng
                     </button>
@@ -2039,13 +2039,13 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                       key={m.id}
                       onClick={() => setPayment(m.id)}
                       className={`w-full flex items-center gap-3 p-4 border-2 rounded-xl transition-all text-left ${
-                        payment === m.id ? 'border-[#8b1a1a] bg-[#fff8f8]' : 'border-gray-200 hover:border-gray-300'
+                        payment === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                        payment === m.id ? 'border-[#8b1a1a]' : 'border-gray-300'
+                        payment === m.id ? 'border-[var(--primary)]' : 'border-gray-300'
                       }`}>
-                        {payment === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[#8b1a1a]" />}
+                        {payment === m.id && <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" />}
                       </div>
                       <span className="text-lg">{m.icon}</span>
                       <div>
@@ -2066,7 +2066,7 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
                 </button>
                 <button
                   onClick={handlePlaceOrder}
-                  className="flex-1 py-3.5 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors"
+                  className="flex-1 py-3.5 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors"
                 >
                   {payment === 'online' ? "Đặt hàng & Thanh toán" : "Xác nhận đặt hàng"}
                 </button>
@@ -2097,7 +2097,7 @@ function CheckoutPage({ items, onBack, onPlaceOrder }: {
             </div>
             <div className="flex justify-between font-bold text-lg border-t border-gray-100 pt-3 mt-3">
               <span>Tổng cộng</span>
-              <span className="text-[#8b1a1a]">{fmt(total)}</span>
+              <span className="text-[var(--primary)]">{fmt(total)}</span>
             </div>
             {checkoutStep > 1 && (
               <div className="mt-4 pt-4 border-t border-gray-100 space-y-2 text-xs text-gray-500">
@@ -2161,7 +2161,7 @@ function PaymentPage({ order, onResult, onBack }: {
           <h2 className="text-xl font-black text-gray-900 mb-2">Quét mã QR để thanh toán</h2>
           <p className="text-sm text-gray-500 mb-6">Sử dụng app ngân hàng bất kỳ hỗ trợ VietQR</p>
           {/* Mock QR code */}
-          <div className="w-48 h-48 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-6 border-4 border-[#fecaca]">
+          <div className="w-48 h-48 mx-auto bg-gray-100 rounded-2xl flex items-center justify-center mb-6 border-4 border-[var(--primary-soft)]">
             <div className="grid grid-cols-5 gap-1 w-36 h-36">
               {Array.from({ length: 25 }).map((_, i) => (
                 <div key={i} className={`rounded-sm ${[0,1,2,3,4,5,9,10,14,15,19,20,21,22,23,24,6,12,18].includes(i) ? 'bg-gray-900' : 'bg-white'}`} />
@@ -2170,7 +2170,7 @@ function PaymentPage({ order, onResult, onBack }: {
           </div>
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
             <div className="text-xs text-gray-500 mb-1">Số tiền cần chuyển</div>
-            <div className="text-2xl font-black text-[#8b1a1a]">{fmt(payAmount)}</div>
+            <div className="text-2xl font-black text-[var(--primary)]">{fmt(payAmount)}</div>
             <div className="text-xs text-gray-500 mt-1">Nội dung: {order.id}</div>
           </div>
           <div className="flex gap-3">
@@ -2207,15 +2207,15 @@ function PaymentPage({ order, onResult, onBack }: {
           {/* Deposit */}
           <button
             onClick={() => setPayMode('deposit')}
-            className={`relative p-4 border-2 rounded-xl transition-all text-left ${payMode === 'deposit' ? 'border-[#8b1a1a] bg-[#fff8f8]' : 'border-gray-200 hover:border-gray-300'}`}
+            className={`relative p-4 border-2 rounded-xl transition-all text-left ${payMode === 'deposit' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${payMode === 'deposit' ? 'border-[#8b1a1a]' : 'border-gray-300'}`}>
-                {payMode === 'deposit' && <div className="w-2 h-2 rounded-full bg-[#8b1a1a]" />}
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${payMode === 'deposit' ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
+                {payMode === 'deposit' && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
               </div>
               <span className="text-sm font-bold text-gray-900">Đặt cọc 30%</span>
             </div>
-            <div className="text-xl font-black text-[#6b1212]">{fmt(depositAmount)}</div>
+            <div className="text-xl font-black text-[var(--primary-dark)]">{fmt(depositAmount)}</div>
             <div className="mt-2">
               <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">
                 🎁 Tặng {DEPOSIT_BONUS_RATE}% điểm thưởng
@@ -2227,15 +2227,15 @@ function PaymentPage({ order, onResult, onBack }: {
           {/* Full */}
           <button
             onClick={() => setPayMode('full')}
-            className={`relative p-4 border-2 rounded-xl transition-all text-left ${payMode === 'full' ? 'border-[#8b1a1a] bg-[#fff8f8]' : 'border-gray-200 hover:border-gray-300'}`}
+            className={`relative p-4 border-2 rounded-xl transition-all text-left ${payMode === 'full' ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'}`}
           >
             <div className="flex items-center gap-2 mb-2">
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${payMode === 'full' ? 'border-[#8b1a1a]' : 'border-gray-300'}`}>
-                {payMode === 'full' && <div className="w-2 h-2 rounded-full bg-[#8b1a1a]" />}
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${payMode === 'full' ? 'border-[var(--primary)]' : 'border-gray-300'}`}>
+                {payMode === 'full' && <div className="w-2 h-2 rounded-full bg-[var(--primary)]" />}
               </div>
               <span className="text-sm font-bold text-gray-900">Thanh toán đủ</span>
             </div>
-            <div className="text-xl font-black text-[#6b1212]">{fmt(fullAmount)}</div>
+            <div className="text-xl font-black text-[var(--primary-dark)]">{fmt(fullAmount)}</div>
             <div className="mt-2">
               <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">
                 🎁 Tặng {FULL_BONUS_RATE}% điểm thưởng
@@ -2255,11 +2255,11 @@ function PaymentPage({ order, onResult, onBack }: {
               key={m.id}
               onClick={() => setSelectedMethod(m)}
               className={`flex items-center gap-3 p-3 border-2 rounded-xl transition-all text-left ${
-                selectedMethod.id === m.id ? 'border-[#8b1a1a] bg-[#fff8f8]' : 'border-gray-200 hover:border-gray-300'
+                selectedMethod.id === m.id ? 'border-[var(--primary)] bg-[var(--primary-soft)]' : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${selectedMethod.id === m.id ? 'bg-[#fff0f0]' : 'bg-gray-100'}`}>
-                <svg className={`w-5 h-5 ${selectedMethod.id === m.id ? 'text-[#8b1a1a]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${selectedMethod.id === m.id ? 'bg-[var(--primary-soft)]' : 'bg-gray-100'}`}>
+                <svg className={`w-5 h-5 ${selectedMethod.id === m.id ? 'text-[var(--primary)]' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={m.icon} />
                 </svg>
               </div>
@@ -2280,11 +2280,11 @@ function PaymentPage({ order, onResult, onBack }: {
         </div>
         <div className="flex justify-between font-bold text-lg border-t border-gray-100 pt-3 mb-5">
           <span>Số tiền thanh toán</span>
-          <span className="text-[#8b1a1a] text-2xl">{fmt(payAmount)}</span>
+          <span className="text-[var(--primary)] text-2xl">{fmt(payAmount)}</span>
         </div>
         <button
           onClick={() => selectedMethod.id === 'qr' ? setShowQR(true) : handlePay()}
-          className="w-full py-4 bg-[#8b1a1a] text-white rounded-xl font-bold text-lg hover:bg-[#6b1212] transition-colors"
+          className="w-full py-4 bg-[var(--primary)] text-white rounded-xl font-bold text-lg hover:bg-[var(--primary-dark)] transition-colors"
         >
           Thanh toán {fmt(payAmount)} qua {selectedMethod.name}
         </button>
@@ -2363,7 +2363,7 @@ function PaymentResultPage({ transaction, order, onHome, onViewOrder }: {
           Về trang chủ
         </button>
         {isSuccess && (
-          <button onClick={onViewOrder} className="flex-1 py-3 bg-[#8b1a1a] text-white rounded-xl font-semibold hover:bg-[#6b1212] transition-colors">
+          <button onClick={onViewOrder} className="flex-1 py-3 bg-[var(--primary)] text-white rounded-xl font-semibold hover:bg-[var(--primary-dark)] transition-colors">
             Xem đơn hàng
           </button>
         )}
@@ -2386,7 +2386,7 @@ function OrderSuccessPage({ order, onHome, onPayOnline }: {
       </div>
       <h1 className="text-2xl font-black text-gray-900 mb-2">Đặt hàng thành công!</h1>
       <p className="text-gray-500 mb-2">Cảm ơn bạn đã mua sắm tại Vin Eyewear.</p>
-      <p className="text-sm text-[#8b1a1a] font-medium mb-8">Mã đơn hàng: <span className="font-mono font-bold">{order.id}</span></p>
+      <p className="text-sm text-[var(--primary)] font-medium mb-8">Mã đơn hàng: <span className="font-mono font-bold">{order.id}</span></p>
 
       {/* Order details */}
       <div className="bg-gray-50 rounded-2xl p-5 mb-6 text-left space-y-3">
@@ -2419,7 +2419,7 @@ function OrderSuccessPage({ order, onHome, onPayOnline }: {
           </div>
           <div className="flex justify-between font-bold text-lg border-t border-gray-100 pt-2">
             <span>Tổng cộng</span>
-            <span className="text-[#8b1a1a]">{fmt(order.total)}</span>
+            <span className="text-[var(--primary)]">{fmt(order.total)}</span>
           </div>
         </div>
       </div>
@@ -2457,7 +2457,7 @@ function OrderSuccessPage({ order, onHome, onPayOnline }: {
         {order.payment === 'online' && onPayOnline && (
           <button
             onClick={onPayOnline}
-            className="w-full py-3.5 bg-[#8b1a1a] text-white rounded-xl font-bold hover:bg-[#6b1212] transition-colors"
+            className="w-full py-3.5 bg-[var(--primary)] text-white rounded-xl font-bold hover:bg-[var(--primary-dark)] transition-colors"
           >
             Thanh toán online ngay
           </button>

@@ -1,30 +1,156 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
 @import 'tailwindcss';
 
+/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+
+:root {
+  --background:              #faf6f2;
+  --foreground:              #1a1214;
+  --card:                    #fff;
+  --card-foreground:         #1a1214;
+  --primary:                 #801a20;
+  --primary-dark:            #641318;
+  --primary-light:           #c97a80;
+  --primary-soft:            #f5e6e7;
+  --primary-foreground:      #faf6f2;
+  --secondary:               #ede8e3;
+  --secondary-foreground:    #1a1214;
+  --muted:                   #ede8e3;
+  --muted-foreground:        #5c4f52;
+  --caption:                 #5c4f52;
+  --accent:                  #f5e6e7;
+  --accent-foreground:       #801a20;
+  --ink:                     #1a1214;
+  --on-ink:                  #faf6f2;
+  --info:                    #1a1214;
+  --success:                 #27ae60;
+  --destructive:             #c0392b;
+  --destructive-foreground:  #faf6f2;
+  --border:                  #c5bcb8;
+  --input:                   #c5bcb8;
+  --ring:                    #801a208c;
+  --sidebar:                 #1a1214;
+  --sidebar-foreground:      #faf6f2;
+  --sidebar-accent:          #2c2124;
+  --sidebar-accent-foreground: #faf6f2;
+  --sidebar-border:          #3a2c2f;
+  --sidebar-ring:            #c97a808c;
+}
+
+/* ─── Tailwind theme ────────────────────────────────────────────────────────── */
+
 @theme {
   --font-display: 'Playfair Display', serif;
-  --font-body: 'Inter', sans-serif;
-  --color-brand: #8b1a1a;
-  --color-brand-light: #a82020;
-  --color-brand-dark: #6b1414;
+  --font-body:    'Inter', sans-serif;
+
+  /* map CSS vars → Tailwind color utilities */
+  --color-bg:               var(--background);
+  --color-fg:               var(--foreground);
+  --color-card:             var(--card);
+  --color-card-fg:          var(--card-foreground);
+  --color-primary:          var(--primary);
+  --color-primary-dark:     var(--primary-dark);
+  --color-primary-light:    var(--primary-light);
+  --color-primary-soft:     var(--primary-soft);
+  --color-primary-fg:       var(--primary-foreground);
+  --color-secondary:        var(--secondary);
+  --color-secondary-fg:     var(--secondary-foreground);
+  --color-muted:            var(--muted);
+  --color-muted-fg:         var(--muted-foreground);
+  --color-caption:          var(--caption);
+  --color-accent:           var(--accent);
+  --color-accent-fg:        var(--accent-foreground);
+  --color-ink:              var(--ink);
+  --color-on-ink:           var(--on-ink);
+  --color-success:          var(--success);
+  --color-destructive:      var(--destructive);
+  --color-destructive-fg:   var(--destructive-foreground);
+  --color-border:           var(--border);
+  --color-input:            var(--input);
 }
+
+/* ─── Base ──────────────────────────────────────────────────────────────────── */
 
 * {
   font-family: var(--font-body);
+  box-sizing: border-box;
 }
 
 body {
-  background-color: #fafaf8;
-  color: #1a1a1a;
+  background-color: var(--background);
+  color:            var(--foreground);
+  font-size:        16px;
+  font-weight:      400;
+  line-height:      1.7;
 }
 
 .font-display {
   font-family: var(--font-display);
 }
 
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+
 .scrollbar-hide {
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ─── Utility classes dùng CSS vars ────────────────────────────────────────── */
+
+/* Backgrounds */
+.bg-primary       { background-color: var(--primary); }
+.bg-primary-dark  { background-color: var(--primary-dark); }
+.bg-primary-soft  { background-color: var(--primary-soft); }
+.bg-accent        { background-color: var(--accent); }
+.bg-muted         { background-color: var(--muted); }
+.bg-card          { background-color: var(--card); }
+.bg-page          { background-color: var(--background); }
+
+/* Text */
+.text-primary      { color: var(--primary); }
+.text-primary-light{ color: var(--primary-light); }
+.text-muted-fg     { color: var(--muted-foreground); }
+.text-caption      { color: var(--caption); }
+.text-accent-fg    { color: var(--accent-foreground); }
+.text-on-ink       { color: var(--on-ink); }
+.text-success      { color: var(--success); }
+.text-destructive  { color: var(--destructive); }
+
+/* Borders */
+.border-primary    { border-color: var(--primary); }
+.border-token      { border-color: var(--border); }
+.border-input      { border-color: var(--input); }
+
+/* Focus ring */
+.ring-primary      { --tw-ring-color: var(--ring); }
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary);
+  color:            var(--primary-foreground);
+  border-radius:    0.75rem;
+  font-weight:      600;
+  transition:       background-color 0.15s;
+}
+.btn-primary:hover  { background-color: var(--primary-dark); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-ghost {
+  background-color: transparent;
+  color:            var(--primary);
+  border:           2px solid var(--primary);
+  border-radius:    0.75rem;
+  font-weight:      600;
+  transition:       background-color 0.15s;
+}
+.btn-ghost:hover  { background-color: var(--primary-soft); }
+
+/* Card */
+.card {
+  background-color: var(--card);
+  color:            var(--card-foreground);
+  border:           1px solid var(--border);
+  border-radius:    1rem;
 }
