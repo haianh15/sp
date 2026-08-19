@@ -468,74 +468,132 @@ const SPH_OPTIONS: Record<RxType, string[]> = {
 const CYL_OPTIONS  = ['0.00','-0.25','-0.50','-0.75','-1.00','-1.25','-1.50','-1.75','-2.00','-2.50','-3.00']
 const AXIS_OPTIONS = ['0','10','20','30','40','50','60','70','80','90','100','110','120','130','140','150','160','170','180']
 
-function SimpleRxForm({ rxType, rx, onChange, showCyl }: {
-  rxType: RxType; rx: PrescriptionData
-  onChange: (rx: PrescriptionData) => void; showCyl: boolean
+function SimpleRxForm({ rx, onChange }: {
+  rx: PrescriptionData
+  onChange: (rx: PrescriptionData) => void
 }) {
-  const sphOpts = SPH_OPTIONS[rxType]
+  // Mỗi mắt có loại tật riêng
+  const [typeOd, setTypeOd] = useState<RxType>('myopia')
+  const [typeOs, setTypeOs] = useState<RxType>('myopia')
+
   const setOd = (f: keyof EyeRx, v: string) => onChange({ ...rx, od: { ...rx.od, [f]: v } })
   const setOs = (f: keyof EyeRx, v: string) => onChange({ ...rx, os: { ...rx.os, [f]: v } })
 
-  const EyeRow = ({ label, eye, set }: { label: string; eye: EyeRx; set: (f: keyof EyeRx, v: string) => void }) => (
-    <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--muted)', border: '1px solid var(--border)' }}>
-      <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--primary)' }}>{label}</p>
-      <div className={`grid gap-3 ${showCyl ? 'grid-cols-3' : 'grid-cols-1'}`}>
-        <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--caption)' }}>
-            {rxType === 'presbyopia' ? 'Độ thêm (ADD)' : 'Độ cầu (SPH)'}
-          </label>
-          <div className="relative">
-            <select value={eye.sph} onChange={e => set('sph', e.target.value)}
-              className="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none appearance-none bg-white"
-              style={{ borderColor: eye.sph ? 'var(--primary)' : 'var(--border)', color: 'var(--foreground)' }}>
-              <option value="">-- Chọn độ --</option>
-              {sphOpts.map(v => <option key={v} value={v}>{v === '0.00' ? 'Không có (0.00)' : v}</option>)}
-            </select>
-            <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--caption)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-          </div>
-        </div>
-        {showCyl && <>
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--caption)' }}>Độ trụ (CYL)</label>
-            <div className="relative">
-              <select value={eye.cyl} onChange={e => set('cyl', e.target.value)}
-                className="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none appearance-none bg-white"
-                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-                <option value="">-- Chọn --</option>
-                {CYL_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
-              </select>
-              <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--caption)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--caption)' }}>Trục (AXIS °)</label>
-            <div className="relative">
-              <select value={eye.axis} onChange={e => set('axis', e.target.value)}
-                className="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none appearance-none bg-white"
-                style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
-                <option value="">-- Chọn --</option>
-                {AXIS_OPTIONS.map(v => <option key={v} value={v}>{v}°</option>)}
-              </select>
-              <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--caption)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-            </div>
-          </div>
-        </>}
-      </div>
-    </div>
-  )
-
   return (
     <div className="space-y-3">
-      <EyeRow label="👁 Mắt phải (OD)" eye={rx.od} set={setOd} />
-      <EyeRow label="👁 Mắt trái (OS)"  eye={rx.os} set={setOs} />
+      <EyePanel
+        label="👁 Mắt phải (OD)"
+        rxType={typeOd}
+        onTypeChange={t => { setTypeOd(t); onChange({ ...rx, od: emptyEye() }) }}
+        eye={rx.od}
+        set={setOd}
+      />
+      <EyePanel
+        label="👁 Mắt trái (OS)"
+        rxType={typeOs}
+        onTypeChange={t => { setTypeOs(t); onChange({ ...rx, os: emptyEye() }) }}
+        eye={rx.os}
+        set={setOs}
+      />
     </div>
   )
 }
 
-function validateSimpleRx(rx: PrescriptionData, showCyl: boolean): string | null {
+function EyePanel({ label, rxType, onTypeChange, eye, set }: {
+  label: string
+  rxType: RxType
+  onTypeChange: (t: RxType) => void
+  eye: EyeRx
+  set: (f: keyof EyeRx, v: string) => void
+}) {
+  const showCyl = rxType === 'astigmatism'
+  const sphOpts = SPH_OPTIONS[rxType]
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+      {/* Header: tên mắt */}
+      <div className="px-4 pt-3 pb-2" style={{ backgroundColor: 'var(--primary-soft)' }}>
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--primary)' }}>{label}</p>
+      </div>
+
+      <div className="p-4 space-y-3" style={{ backgroundColor: 'var(--muted)' }}>
+        {/* Chọn loại tật cho mắt này */}
+        <div>
+          <p className="text-xs font-medium mb-2" style={{ color: 'var(--caption)' }}>Loại tật</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {RX_TYPES.map(t => (
+              <button key={t.id}
+                onClick={() => onTypeChange(t.id)}
+                className="flex items-center gap-2 px-2.5 py-2 rounded-lg border-2 text-left transition-all"
+                style={{
+                  borderColor:     rxType === t.id ? 'var(--primary)' : 'var(--border)',
+                  backgroundColor: rxType === t.id ? 'var(--primary-soft)' : 'var(--card)',
+                }}>
+                <span className="text-base leading-none">{t.icon}</span>
+                <span className="text-xs font-semibold leading-tight"
+                  style={{ color: rxType === t.id ? 'var(--primary)' : 'var(--foreground)' }}>
+                  {t.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Nhập độ */}
+        <div className={`grid gap-3 ${showCyl ? 'grid-cols-3' : 'grid-cols-1'}`}>
+          {/* SPH / ADD */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--caption)' }}>
+              {rxType === 'presbyopia' ? 'Độ thêm (ADD)' : 'Độ cầu (SPH)'}
+            </label>
+            <div className="relative">
+              <select value={eye.sph} onChange={e => set('sph', e.target.value)}
+                className="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none appearance-none bg-white"
+                style={{ borderColor: eye.sph ? 'var(--primary)' : 'var(--border)', color: 'var(--foreground)' }}>
+                <option value="">-- Chọn --</option>
+                {sphOpts.map(v => <option key={v} value={v}>{v === '0.00' ? 'Không có (0.00)' : v}</option>)}
+              </select>
+              <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--caption)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
+
+          {/* CYL + AXIS — chỉ khi loạn thị */}
+          {showCyl && <>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--caption)' }}>Độ trụ (CYL)</label>
+              <div className="relative">
+                <select value={eye.cyl} onChange={e => set('cyl', e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none appearance-none bg-white"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+                  <option value="">-- Chọn --</option>
+                  {CYL_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+                </select>
+                <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--caption)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--caption)' }}>Trục (AXIS °)</label>
+              <div className="relative">
+                <select value={eye.axis} onChange={e => set('axis', e.target.value)}
+                  className="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none appearance-none bg-white"
+                  style={{ borderColor: 'var(--border)', color: 'var(--foreground)' }}>
+                  <option value="">-- Chọn --</option>
+                  {AXIS_OPTIONS.map(v => <option key={v} value={v}>{v}°</option>)}
+                </select>
+                <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--caption)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              </div>
+            </div>
+          </>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function validateSimpleRx(rx: PrescriptionData): string | null {
   for (const [name, eye] of [['Mắt phải', rx.od], ['Mắt trái', rx.os]] as [string, EyeRx][]) {
     if (!eye.sph) return `${name}: vui lòng chọn độ`
-    if (showCyl && eye.cyl && !eye.axis) return `${name}: vui lòng chọn trục (AXIS) khi có độ trụ`
+    if (eye.cyl && !eye.axis) return `${name}: vui lòng chọn trục (AXIS) khi có độ trụ`
   }
   return null
 }
@@ -613,9 +671,7 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
   const [rx, setRx] = useState<PrescriptionData>({ od: emptyEye(), os: emptyEye() })
   const [rxError, setRxError] = useState<string | null>(null)
   const [qty, setQty] = useState(1)
-  // Loại tật khúc xạ — người dùng chọn trước khi nhập độ
-  const [rxType, setRxType] = useState<RxType>('myopia')
-
+  // Loại tật khúc xạ — mỗi mắt có type riêng, quản lý bên trong SimpleRxForm
   const profileRx = userId ? MOCK_PROFILES[userId] : null
 
   const totalPrice = (product.price + (selectedLens?.surcharge ?? 0)) * qty
@@ -648,8 +704,7 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
   }
 
   function handleRxSubmit() {
-    const showCyl = rxType === 'astigmatism'
-    const err = validateSimpleRx(rx, showCyl)
+    const err = validateSimpleRx(rx)
     if (err) { setRxError(err); return }
     setRxError(null)
     setStep('summary')
@@ -863,29 +918,8 @@ function CartModal({ product, onClose, onConfirm, userId, buyNow = false }: Cart
               </div>
             )}
 
-            {/* Chọn loại tật */}
-            <div>
-              <p className="text-sm font-semibold mb-2" style={{ color: 'var(--foreground)' }}>Loại tật khúc xạ</p>
-              <div className="grid grid-cols-2 gap-2">
-                {RX_TYPES.map(t => (
-                  <button key={t.id} onClick={() => { setRxType(t.id); setRx({ od: emptyEye(), os: emptyEye() }); setRxError(null) }}
-                    className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-left transition-all"
-                    style={{
-                      borderColor: rxType === t.id ? 'var(--primary)' : 'var(--border)',
-                      backgroundColor: rxType === t.id ? 'var(--primary-soft)' : 'var(--card)',
-                    }}>
-                    <span className="text-xl leading-none">{t.icon}</span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold leading-tight" style={{ color: rxType === t.id ? 'var(--primary)' : 'var(--foreground)' }}>{t.label}</p>
-                      <p className="text-[10px] leading-tight mt-0.5" style={{ color: 'var(--caption)' }}>{t.desc}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Form chọn độ */}
-            <SimpleRxForm rxType={rxType} rx={rx} onChange={setRx} showCyl={rxType === 'astigmatism'} />
+            {/* Form chọn độ — mỗi mắt chọn loại tật riêng */}
+            <SimpleRxForm rx={rx} onChange={setRx} />
 
             {rxError && (
               <div className="text-sm rounded-lg p-3" style={{ backgroundColor: 'var(--primary-soft)', color: 'var(--destructive)' }}>
